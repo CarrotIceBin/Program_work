@@ -82,8 +82,7 @@
 						<view class="stats-row">
 							<view
 								class="user-stats"
-								v-if="item.userSex || item.userOld"
-								:style="{ background: item.userSex == '女' ? '#ff6b8a' : '#00d4ec' }"
+								:style="{ background: item.userSex ? (item.userSex == '女' ? '#ff6b8a' : '#00d4ec') : '#cccccc' }"
 							>
 								<text class="age-icon">{{ item.userSex ? (item.userSex == '女' ? '♀' : '♂') : '' }}</text>
 								<text class="age-num">{{ item.userOld }}</text>
@@ -723,6 +722,10 @@ export default {
 		// 处理分页数据拼接
 		handleData(newsList, reset) {
 			const data = newsList.datas || [];
+			// 调试：打印每条列表项的 userid、userSex、userOld
+			data.forEach((item, i) => {
+				console.log(`=== 列表数据[${i}] === userid:${item.userid} userSex:${item.userSex} userOld:${item.userOld} userName:${item.userName}`);
+			});
 			const pageInfo = newsList.pgInfo || {};
 			if (reset) {
 				this.tabData[this.tabIndex] = [...data];
@@ -731,16 +734,20 @@ export default {
 			}
 			this.pageInfo[this.tabIndex] = pageInfo;
 			this.loadStatus = data.length >= pageInfo.total_num ? 'noMore' : 'more';
-			this.fixMissingUserInfo();
 		},
 		// 补全列表中缺失的性别和年龄信息（从basics基本资料获取）
 		fixMissingUserInfo() {
 			const list = this.tabData[this.tabIndex] || [];
+			console.log(`fixMissingUserInfo: total=${list.length}, items with missing data:`);
+			list.forEach((item, i) => {
+				const missing = (!item.userSex || !item.userOld);
+				if (missing) {
+					console.log(`  [${i}] userid=${item.userid} userSex="${item.userSex}" userOld="${item.userOld}" userName=${item.userName}`);
+				}
+			});
 			const missingUsers = list.filter(item => (!item.userSex || !item.userOld) && item.userid);
 			
 			if (!missingUsers.length) return;
-			
-			console.log('fixMissingUserInfo: need to fetch info for', missingUsers.length, 'users');
 			
 			let updatedCount = 0;
 			missingUsers.forEach((item) => {
@@ -758,7 +765,7 @@ export default {
 					return;
 				}
 				this.fetchUserInfo(item.userid).then(info => {
-					console.log('fetchUserInfo result:', item.userid, info);
+
 					if (info) {
 						this.userInfoCache[item.userid] = info;
 						const currentList = this.tabData[this.tabIndex] || [];
@@ -780,11 +787,32 @@ export default {
 		fetchUserInfo(userid) {
 			return new Promise((resolve) => {
 				if (this.userInfoCache[userid]) {
-					resolve(this.userInfoCache[userid]);
-					return;
+					// 如果缓存的性别/年龄与当前用户一致，说明缓存的是错误数据（userInfoListMy 返回的），清除缓存
+					const cached = this.userInfoCache[userid];
+					const currentUserid = uni.getStorageSync('userid');
+					const isOtherUser = String(userid) !== String(currentUserid);
+					if (isOtherUser && cached.fromUserInfoListMy) {
+						delete this.userInfoCache[userid];
+						console.log('fetchUserInfo: cleared wrong cache for', userid);
+					} else {
+						resolve(cached);
+						return;
+					}
 				}
 				const token = uni.getStorageSync('token');
-				console.log('fetchUserInfo: calling userInfoListMy for userid:', userid);
+				const currentUserid = String(uni.getStorageSync('userid') || '').trim();
+				const targetUserid = String(userid || '').trim();
+				console.log(`fetchUserInfo compare: targetUserid="${targetUserid}" currentUserid="${currentUserid}" equal=${targetUserid === currentUserid}`);
+				
+				// 只有查看自己时才调 userInfoListMy（后端只认 token 不认 userid）
+				// 查看他人时直接用 userInfoPublic
+				if (targetUserid !== currentUserid) {
+					console.log('fetchUserInfo: 他人数据，直接用 userInfoPublic, userid:', userid);
+					this.fetchFromPublic(userid, token).then(resolve);
+					return;
+				}
+				
+				console.log('fetchUserInfo: 自己数据，调用 userInfoListMy, userid:', userid);
 				// 优先从basics基本资料获取
 				this.$http('userInfoListMy', JSON.stringify({ 
 					groupInfo: 1,
@@ -809,6 +837,7 @@ export default {
 						
 						if (info.sex || info.age) {
 							console.log('userInfoListMy resolved with:', info);
+							info.fromUserInfoListMy = true;
 							this.userInfoCache[userid] = info;
 							resolve(info);
 							return;

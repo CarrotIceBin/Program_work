@@ -41,9 +41,9 @@
 			<!-- 用户信息卡 -->
 			<view class="info-card">
 				<view class="info-row">
-					<text class="info-name">{{ userInfo.userName || '—' }}</text>
-					<view v-if="userInfo.sex" class="gender-badge" :style="{ background: userInfo.sex == '男' ? '#0dc6e0' : '#ff6b8a' }">
-						<text>{{ userInfo.sex == '男' ? '♂' : '♀' }}</text>
+					<text class="info-name">{{ userInfo.userName || '未知' }}</text>
+					<view class="gender-badge" :style="{ background: userInfo.sex ? (userInfo.sex == '男' ? '#0dc6e0' : '#ff6b8a') : '#cccccc' }">
+						<text>{{ userInfo.sex ? (userInfo.sex == '男' ? '♂' : '♀') : '未知' }}</text>
 						<text>{{ userInfo.userOld }}</text>
 					</view>
 				</view>
@@ -78,6 +78,7 @@
 							<text class="motto-content">{{ mottoText }}</text>
 						</view>
 					</view>
+
 					<view v-if="xiangQinData.length" class="section">
 						<view class="section-title1">相亲资料</view>
 						<view class="xiangqin-grid">
@@ -103,6 +104,7 @@
 							</view>
 						</view>
 					</view>
+					
 					<view v-if="selfImages.length" class="section">
 						<view class="section-title">照片</view>
 						<view class="image-grid">
@@ -188,8 +190,8 @@
 						<image class="post-avatar" :src="userInfo.imgUrl || '/static/missing-face.png'" mode="aspectFill" />
 						<view class="post-meta">
 							<text class="post-name">{{ userInfo.userName }}</text>
-							<view v-if="userInfo.sex" class="gender-badge" :style="{ background: userInfo.sex == '男' ? '#0dc6e0' : '#ff6b8a' }">
-								<text>{{ userInfo.sex == '男' ? '♂' : '♀' }}</text>
+							<view class="gender-badge" :style="{ background: userInfo.sex ? (userInfo.sex == '男' ? '#0dc6e0' : '#ff6b8a') : '#cccccc' }">
+								<text>{{ userInfo.sex ? (userInfo.sex == '男' ? '♂' : '♀') : '未知' }}</text>
 								<text>{{ userInfo.userOld }}</text>
 							</view>
 						</view>
@@ -208,10 +210,14 @@
 								<uni-icons type="compose" size="22" />
 								<text class="action-title">{{ post.numPinLun || '评论' }}</text>
 							</view>
-							<view class="action-item" @click="handleAccost(userInfo.userid)">
+							<view class="action-item" @click="handleViewCount(post)">
+								<uni-icons type="eye" size="22" />
+								<text class="action-title">{{ post.viewNum || 0 }}次浏览</text>
+							</view>
+							<!-- <view class="action-item" @click="handleAccost(userInfo.userid)">
 								<uni-icons type="chat" size="22" />
 								<text class="action-title">上热点</text>
-							</view>
+							</view> -->
 							<view class="action-item" @click="showSharePopup('转到', 'switched')">
 								<uni-icons type="redo" size="22" />
 								<text class="action-title">转到</text>
@@ -259,7 +265,7 @@ export default {
 			scrollHeight: 0,
 			navOpacity: 0,
 			navBgColor: 'transparent',
-			navTextColor: '#ffffff',
+			navTextColor: '#FF6600',
 			navTitle: '',
 			leftIcon: 'left',
 			btnBgColor: 'rgba(0,0,0,0.25)',
@@ -296,7 +302,6 @@ export default {
 	},
 	onLoad(options) {
 		const { userid } = options;
-		console.log('=== headshots onLoad === options.userid:', userid, '当前登录userid:', uni.getStorageSync('userid'));
 		const sys = uni.getSystemInfoSync();
 		this.statusBarHeight = sys.statusBarHeight || 20;
 		// 精确计算滚动区高度，避免高度不定导致抖动
@@ -304,127 +309,43 @@ export default {
 		this.userid = userid;
 		this.fetchUser();
 	},
-	computed: {
+		computed: {
 		isSelf() {
 			return String(uni.getStorageSync('userid')) === String(this.userid);
 		},
-		// 自己相亲资料 - 只有自己查看自己时才从 userInfoListMy 获取
-		// 查看他人时显示空（后端不认 userid，返回的是当前登录用户的数据）
 		keyInfoList() {
-			if (!this.isSelf) return this.buildKeyInfoFromUserInfo();
-			
-			const list = [];
-			const basic = this.userBasicData;
-			if (!basic.length) return list;
-			
-			basic.forEach(item => {
-				if (!item.infoTxt) return;
-				switch (item.moduleID) {
-					case 'tall':
-						list.push(`身高${item.infoTxt}cm`);
-						break;
-					case 'star':
-						list.push(item.infoTxt);
-						break;
-					case 'education':
-						list.push(item.infoTxt);
-						break;
-					case 'degree':
-						list.push(item.infoTxt);
-						break;
-					case 'work_name':
-						list.push(item.infoTxt);
-						break;
-					case 'sex':
-						list.push(item.infoTxt);
-						break;
-					case 'birthday':
-						if (this.userInfo.userOld) {
-							list.push(`${this.userInfo.userOld}岁`);
-						}
-						break;
-				}
-			});
-			return list;
+			return this.buildKeyInfoFromUserInfo();
 		},
 		mottoText() {
-			if (!this.isSelf) return this.userInfo.zuoYouMin || '';
-			const item = this.userBasicData.find(i => i.moduleID === 'centence');
-			return item ? item.infoTxt : '';
+			return this.userInfo.zuoYouMin || '';
 		},
 		xiangQinLeftList() {
-			if (!this.isSelf) return [];
-			const leftKeys = ['nick_name', 'sex', 'birthday', 'age', 'marrry', 'area_code', 'area_code_work', 'work_name', 'degree', 'education'];
-			return this.xiangQinData.filter(item => leftKeys.includes(item.moduleID));
+			return this.buildXiangQinFromUserInfo();
 		},
 		xiangQinRightList() {
-			if (!this.isSelf) return [];
-			const rightKeys = ['age_range', 'bride_price', 'bottom_line', 'family_status', 'family_affection', 'advantage', 'hobby', 'ideal_partner', 'hometown_way'];
-			return this.xiangQinData.filter(item => rightKeys.includes(item.moduleID));
+			return [];
 		},
 		otherKeyInfoList() {
-			if (!this.isSelf) return this.buildKeyInfoFromUserInfo();
-			
-			const list = [];
-			const basic = this.userBasicData;
-			if (!basic.length) return list;
-			
-			basic.forEach(item => {
-				if (!item.infoTxt) return;
-				switch (item.moduleID) {
-					case 'tall':
-						list.push(`身高${item.infoTxt}cm`);
-						break;
-					case 'star':
-						list.push(item.infoTxt);
-						break;
-					case 'education':
-						list.push(item.infoTxt);
-						break;
-					case 'degree':
-						list.push(item.infoTxt);
-						break;
-					case 'work_name':
-						list.push(item.infoTxt);
-						break;
-					case 'sex':
-						list.push(item.infoTxt);
-						break;
-					case 'birthday':
-						if (this.userInfo.userOld) {
-							list.push(`${this.userInfo.userOld}岁`);
-						}
-						break;
-				}
-			});
-			return list;
+			return this.buildKeyInfoFromUserInfo();
 		},
 		otherMottoText() {
-			if (!this.isSelf) return this.userInfo.zuoYouMin || '';
-			const item = this.userBasicData.find(i => i.moduleID === 'centence');
-			return item ? item.infoTxt : '';
+			return this.userInfo.zuoYouMin || '';
 		},
 		otherLeftList() {
-			if (!this.isSelf) return [];
-			const leftKeys = ['nick_name', 'sex', 'birthday', 'age', 'marrry', 'area_code', 'area_code_work', 'work_name', 'degree', 'education'];
-			return this.userOtherData.filter(item => leftKeys.includes(item.moduleID));
+			return this.buildXiangQinFromUserInfo();
 		},
 		otherRightList() {
-			if (!this.isSelf) return [];
-			const rightKeys = ['age_range', 'bride_price', 'bottom_line', 'family_status', 'family_affection', 'advantage', 'hobby', 'ideal_partner', 'hometown_way'];
-			return this.userOtherData.filter(item => rightKeys.includes(item.moduleID));
+			return [];
 		}
 	},
 	methods: {
 		fetchUser() {
 			uni.showLoading({ title: '加载中...' });
-			console.log('=== fetchUser === this.userid:', this.userid, '当前登录userid:', uni.getStorageSync('userid'));
 			this.$http('userInfoPublic', JSON.stringify({
 				token: uni.getStorageSync('token'),
 				userid: this.userid,
 			})).then((res) => {
 				uni.hideLoading();
-				console.log('=== userInfoPublic 返回 === code:', res.code, 'userInfo.userid:', res.userInfo && res.userInfo.userid, 'userInfo.userName:', res.userInfo && res.userInfo.userName);
 				if (res.code == 0) {
 					this.userInfo = res.userInfo;
 					this.userInfo.userOld = this.calcAge(res.userInfo.birthday);
@@ -436,14 +357,8 @@ export default {
 						this.viewMode = 1;
 					}
 					
-					// 只有查看自己主页时才调用 userInfoListMy 接口（后端只认 token 不认 userid）
-					if (this.isSelf) {
-						this.userInfoMy(1);
-						this.loadXiangQinData();
-						this.loadXiangQinOtherData();
-					} else {
-						console.log('=== 查看他人主页，跳过 userInfoListMy 调用 ===');
-					}
+					// 加载动态列表
+					this.newsUserMy();
 				} else {
 					uni.showToast({ title: res.msg || '获取失败', icon: 'none' });
 				}
@@ -459,7 +374,14 @@ export default {
 				pg: this.pages
 			})).then((res) => {
 				if (res.code == 0) {
-					this.postsData = res.newsList.datas.map(item => {
+					const datas = res.newsList.datas || [];
+					console.log('=== newsUserListHis 返回 === 条数:', datas.length);
+					if (datas.length > 0) {
+						const first = datas[0];
+						console.log('第一条数据字段:', Object.keys(first).join(', '));
+						console.log('第一条数据 numDianZan:', first.numDianZan, 'numPinLun:', first.numPinLun, 'viewNum:', first.viewNum, 'isDianZan:', first.isDianZan);
+					}
+					this.postsData = datas.map(item => {
 						if (item.iconUrl) {
 							item.images = item.iconUrl.split(',').filter(url => url.trim() !== '');
 						} else {
@@ -467,6 +389,8 @@ export default {
 						}
 						return item;
 					});
+					// 计算获赞总数
+					this.likeCount = this.postsData.reduce((sum, p) => sum + (Number(p.numDianZan) || 0), 0);
 				} else {
 					uni.showToast({ title: res.msg, icon: 'none' });
 				}
@@ -484,6 +408,15 @@ export default {
 				if (res.code == 0) {
 					if (index == 1) {
 						this.userBasicData = res.infoList;
+						// 从 userInfoListMy 返回的 birthday 字段计算年龄，补充 userInfoPublic 中为空的情况
+						const birthdayItem = res.infoList.find(i => i.moduleID === 'birthday');
+						if (birthdayItem && birthdayItem.infoTxt) {
+							const age = this.calcAge(birthdayItem.infoTxt);
+							if (age) {
+								this.userInfo.userOld = age;
+								this.$forceUpdate();
+							}
+						}
 					} else {
 						this.userOtherData = res.infoList;
 					}
@@ -710,7 +643,6 @@ export default {
 			const list = [];
 			const u = this.userInfo;
 			if (!u || !u.userid) return list;
-			
 			if (u.sex) list.push(u.sex);
 			if (u.userOld) list.push(`${u.userOld}岁`);
 			if (u.shengGao) list.push(`身高${u.shengGao}cm`);
@@ -720,6 +652,25 @@ export default {
 			if (u.biYeYuanXiao) list.push(u.biYeYuanXiao);
 			if (u.hyzt) list.push(u.hyzt);
 			return list;
+		},
+		// 从 userInfoPublic 构建「相亲资料」左侧条目（和 userInfoListMy 返回结构一致：{moduleID, moduleName, infoTxt}）
+		buildXiangQinFromUserInfo() {
+			const u = this.userInfo;
+			if (!u || !u.userid) return [];
+			const rows = [
+				{ moduleID: 'nick_name',    moduleName: '姓名',           infoTxt: u.userName || '' },
+				{ moduleID: 'sex',          moduleName: '性别',           infoTxt: u.sex || '' },
+				{ moduleID: 'birthday',     moduleName: '出生年月',       infoTxt: u.birthday || '' },
+				{ moduleID: 'age',          moduleName: '年龄',           infoTxt: (u.userOld ? `${u.userOld}岁` : '') },
+				{ moduleID: 'hyzt',         moduleName: '婚姻状况',       infoTxt: u.hyzt || '' },
+				{ moduleID: 'area_code',    moduleName: '成长地',         infoTxt: u.remark || '' },
+				{ moduleID: 'area_code_work', moduleName: '工作地',       infoTxt: u.gongZuoDi || '' },
+				{ moduleID: 'work_name',    moduleName: '职业',           infoTxt: u.zhiYe || '' },
+				{ moduleID: 'education',    moduleName: '文化程度',       infoTxt: u.wenHua || '' },
+				{ moduleID: 'degree',       moduleName: '所学专业',       infoTxt: u.biYeYuanXiao ? `毕业于${u.biYeYuanXiao}` : '' },
+			];
+			// 只保留有 infoTxt 的行
+			return rows.filter(r => r.infoTxt);
 		},
 		loadImagesFromData(data, type) {
 			const photosItem = data.find(item => item.moduleID === 'photos');
@@ -766,15 +717,15 @@ export default {
 
 			if (opacity <= 0) {
 				this.navBgColor = 'transparent';
-				this.navTextColor = '#ffffff';
+				this.navTextColor = '#FF6600';
 				this.btnBgColor = 'rgba(0,0,0,0.25)';
 			} else if (opacity >= 1) {
 				this.navBgColor = '#ffffff';
-				this.navTextColor = '#333333';
+				this.navTextColor = '#FF6600';
 				this.btnBgColor = 'rgba(0,0,0,0.06)';
 			} else {
 				this.navBgColor = `rgba(255,255,255,${opacity})`;
-				this.navTextColor = opacity > 0.5 ? '#333333' : '#ffffff';
+				this.navTextColor = '#FF6600';
 				this.btnBgColor = `rgba(0,0,0,${opacity > 0.5 ? 0.06 : 0.25})`;
 			}
 
@@ -795,6 +746,22 @@ export default {
 		},
 		handleDianzan(newsID) {
 			/* 点赞逻辑 */
+		},
+		handleViewCount(post) {
+			// 浏览计数
+			if (post._viewCounted) return;
+			post._viewCounted = true;
+			post.viewNum = (Number(post.viewNum) || 0) + 1;
+			this.$http('newsViewCount', JSON.stringify({
+				newsID: post.newsID,
+				token: uni.getStorageSync('token') || ''
+			})).then(res => {
+				if (res.code == 0) {
+					console.log('浏览计数成功');
+				}
+			}).catch(() => {
+				console.log('浏览计数接口暂未实现,本地已+1');
+			});
 		},
 		handleDiscuss(post) {
 			this.handleShare();

@@ -41,10 +41,10 @@
 		</view> -->
 		
 		<view class="interactive-section">
-			<view class="interactive-item">
+			<view class="interactive-item" @click="myNewsClick">
 				<view class="info-number">{{ userTopData.numNewsMy }}</view>
-				<view class="info-label">我的动态</view>
-				<view class="interactive-action" @click="publishClick">发同城圈</view>
+				<view class="info-label">我的同城</view>
+				<view class="interactive-action" @click.stop="publishClick">发同城圈</view>
 			</view>
 			
 			<view class="interactive-item">
@@ -169,6 +169,17 @@ export default {
 			if (!this.checkLogin()) return;
 			uni.navigateTo({
 				url: "/pages/index/dynamic"
+			});
+		},
+		myNewsClick() {
+			if (!this.checkLogin()) return;
+			const userid = uni.getStorageSync('userid');
+			if (!userid) {
+				this.showToast('用户信息异常');
+				return;
+			}
+			uni.navigateTo({
+				url: `/pages/index/headshots?userid=${userid}`
 			});
 		},
 		checkLogin() {

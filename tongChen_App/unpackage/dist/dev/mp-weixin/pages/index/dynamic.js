@@ -618,6 +618,13 @@ var _default = {
         }
         this.selectVideoItem();
       } else {
+        // 内容校验：文字和图片至少要有一个
+        var hasText = !!(this.discussTitle && this.discussTitle.trim());
+        var hasImages = this.uploadedImages.length > 0;
+        if (!hasText && !hasImages) {
+          this.showToast('请输入文字内容或添加图片后再发布');
+          return;
+        }
         var submitData = {
           newsTitle: '',
           iconUrl: this.uploadedImages.join(),

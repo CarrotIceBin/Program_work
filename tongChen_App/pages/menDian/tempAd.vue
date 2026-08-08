@@ -90,7 +90,7 @@
         <view class="upload-row">
           <view class="upload-btn" @click="chooseImg('idFront')">身份证正面</view>
           <view class="upload-btn" @click="chooseImg('idBack')">身份证反面</view>
-          <view class="upload-btn" @click="chooseImg('scene')">场景照片</view>
+          <view class="upload-btn" @click="chooseImg('scene')">标志性场景照片</view>
           <view class="upload-btn agree-btn" @click="showAgree">签署协议</view>
         </view>
         <!-- 已上传图片预览 -->

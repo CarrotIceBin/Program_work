@@ -367,6 +367,17 @@ var _default = {
         url: "/pages/index/dynamic"
       });
     },
+    myNewsClick: function myNewsClick() {
+      if (!this.checkLogin()) return;
+      var userid = uni.getStorageSync('userid');
+      if (!userid) {
+        this.showToast('用户信息异常');
+        return;
+      }
+      uni.navigateTo({
+        url: "/pages/index/headshots?userid=".concat(userid)
+      });
+    },
     checkLogin: function checkLogin() {
       if (!uni.getStorageSync('token')) {
         this.navigateToLogin();

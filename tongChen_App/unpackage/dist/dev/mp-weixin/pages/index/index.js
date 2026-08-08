@@ -564,7 +564,6 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 //
 //
 //
-//
 var _default = {
   data: function data() {
     return {
@@ -1106,6 +1105,10 @@ var _default = {
     // 处理分页数据拼接
     handleData: function handleData(newsList, reset) {
       var data = newsList.datas || [];
+      // 调试：打印每条列表项的 userid、userSex、userOld
+      data.forEach(function (item, i) {
+        console.log("=== \u5217\u8868\u6570\u636E[".concat(i, "] === userid:").concat(item.userid, " userSex:").concat(item.userSex, " userOld:").concat(item.userOld, " userName:").concat(item.userName));
+      });
       var pageInfo = newsList.pgInfo || {};
       if (reset) {
         this.tabData[this.tabIndex] = (0, _toConsumableArray2.default)(data);
@@ -1115,17 +1118,22 @@ var _default = {
       }
       this.pageInfo[this.tabIndex] = pageInfo;
       this.loadStatus = data.length >= pageInfo.total_num ? 'noMore' : 'more';
-      this.fixMissingUserInfo();
     },
     // 补全列表中缺失的性别和年龄信息（从basics基本资料获取）
     fixMissingUserInfo: function fixMissingUserInfo() {
       var _this9 = this;
       var list = this.tabData[this.tabIndex] || [];
+      console.log("fixMissingUserInfo: total=".concat(list.length, ", items with missing data:"));
+      list.forEach(function (item, i) {
+        var missing = !item.userSex || !item.userOld;
+        if (missing) {
+          console.log("  [".concat(i, "] userid=").concat(item.userid, " userSex=\"").concat(item.userSex, "\" userOld=\"").concat(item.userOld, "\" userName=").concat(item.userName));
+        }
+      });
       var missingUsers = list.filter(function (item) {
         return (!item.userSex || !item.userOld) && item.userid;
       });
       if (!missingUsers.length) return;
-      console.log('fixMissingUserInfo: need to fetch info for', missingUsers.length, 'users');
       var updatedCount = 0;
       missingUsers.forEach(function (item) {
         // 先检查缓存
@@ -1144,7 +1152,6 @@ var _default = {
           return;
         }
         _this9.fetchUserInfo(item.userid).then(function (info) {
-          console.log('fetchUserInfo result:', item.userid, info);
           if (info) {
             _this9.userInfoCache[item.userid] = info;
             var currentList = _this9.tabData[_this9.tabIndex] || [];
@@ -1169,11 +1176,31 @@ var _default = {
       var _this10 = this;
       return new Promise(function (resolve) {
         if (_this10.userInfoCache[userid]) {
-          resolve(_this10.userInfoCache[userid]);
-          return;
+          // 如果缓存的性别/年龄与当前用户一致，说明缓存的是错误数据（userInfoListMy 返回的），清除缓存
+          var cached = _this10.userInfoCache[userid];
+          var _currentUserid = uni.getStorageSync('userid');
+          var isOtherUser = String(userid) !== String(_currentUserid);
+          if (isOtherUser && cached.fromUserInfoListMy) {
+            delete _this10.userInfoCache[userid];
+            console.log('fetchUserInfo: cleared wrong cache for', userid);
+          } else {
+            resolve(cached);
+            return;
+          }
         }
         var token = uni.getStorageSync('token');
-        console.log('fetchUserInfo: calling userInfoListMy for userid:', userid);
+        var currentUserid = String(uni.getStorageSync('userid') || '').trim();
+        var targetUserid = String(userid || '').trim();
+        console.log("fetchUserInfo compare: targetUserid=\"".concat(targetUserid, "\" currentUserid=\"").concat(currentUserid, "\" equal=").concat(targetUserid === currentUserid));
+
+        // 只有查看自己时才调 userInfoListMy（后端只认 token 不认 userid）
+        // 查看他人时直接用 userInfoPublic
+        if (targetUserid !== currentUserid) {
+          console.log('fetchUserInfo: 他人数据，直接用 userInfoPublic, userid:', userid);
+          _this10.fetchFromPublic(userid, token).then(resolve);
+          return;
+        }
+        console.log('fetchUserInfo: 自己数据，调用 userInfoListMy, userid:', userid);
         // 优先从basics基本资料获取
         _this10.$http('userInfoListMy', JSON.stringify({
           groupInfo: 1,
@@ -1199,6 +1226,7 @@ var _default = {
             }
             if (info.sex || info.age) {
               console.log('userInfoListMy resolved with:', info);
+              info.fromUserInfoListMy = true;
               _this10.userInfoCache[userid] = info;
               resolve(info);
               return;
