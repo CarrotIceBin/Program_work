@@ -1,0 +1,478 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "同城交友",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/index/dynamic",
+			"style": {
+				"navigationBarTitleText": "同城圈",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/index/discuss",
+			"style": {
+				"navigationBarTitleText": "评论",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+		  "path": "pages/index/headshots",
+		  "style": {
+		    "navigationStyle": "custom",
+		    "disableScroll": true,
+		    "app-plus": {
+				"bounce": "none",
+				"scrollIndicator": "none"
+		    }
+		  }
+		},
+		{
+			"path" : "pages/ourCity/ourLocalNews",
+			"style" : 
+			{
+				"navigationStyle": "custom",
+				"navigationBarTitleText" : "同城消息",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path" : "pages/makingFriends/makingFriends",
+			"style" : 
+			{
+				"navigationStyle": "custom",
+				"navigationBarTitleText" : "交友/相亲",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/makingFriends/malingUser",
+			"style": {
+				"navigationBarTitleText": "同城交友",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path" : "pages/user/userVideo",
+			"style" : 
+			{
+				"navigationBarTitleText" : "视频",
+				"enablePullDownRefresh": false,
+				"navigationStyle": "custom"
+			}
+		},
+		{
+		 	"path": "pages/user/aboutUs",
+		 	"style": {
+		 		"navigationBarTitleText": "联系我们"
+		 	}
+		},
+		{
+		    "path" : "pages/user/notification",
+		    "style" : {
+				"navigationBarTitleText": "系统通知"
+			}
+		},
+		{
+		    "path" : "pages/userProfile/userName",
+		    "style" :
+		    {
+		        "navigationBarTitleText": "昵称",
+		        "enablePullDownRefresh": false
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/userinfo",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "个人信息",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/basics",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "基本资料",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/xiangQin",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "相亲资料",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/xiangQinOther",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "他人相亲资料",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/notice",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "通知",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/qualification",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "平台资质",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/contactUs",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "联系方式",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+		    "path" : "pages/userProfile/features",
+		    "style" :                                                                                    
+		    {
+		        "navigationBarTitleText": "同城有缘",
+		        "enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+		    }
+		},
+		{
+			"path" : "pages/menDian/menDianUser",
+			"style" : 
+			{
+				"navigationBarTitleText" : "我的门店",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path" : "pages/menDian/menDianAddBy",
+			"style" : 
+			{
+				"navigationBarTitleText" : "",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path" : "pages/menDian/menDianUserMeans",
+			"style" : 
+			{
+				"navigationBarTitleText" : "门店资料",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/menDian/menDianList",
+			"style": {
+				"navigationBarTitleText": "订阅内容",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/menDian/menDianInfo",
+			"style": {
+				"navigationBarTitleText": "门店详情",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/menDian/goodsDetail",
+			"style": {
+				"navigationBarTitleText": "商品详情",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/public/phonLogin",
+			"style": {
+				"navigationBarTitleText": "手机号码登录"
+			}
+		},
+		{
+			"path": "pages/public/loginPwd",
+			"style": {
+				"navigationBarTitleText": "帐号密码登录",
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/public/pwdfoget",
+			"style": {
+				"navigationBarTitleText": "忘记密码"
+			}
+		},
+		{
+			"path": "pages/public/reg",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/public/question",
+			"style": {
+				"navigationBarTitleText": "密保问题",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/public/pwdResetCheck",
+			"style": {
+				"navigationBarTitleText": "重置密码",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+		{
+			"path": "pages/public/login",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none",
+					"animationType": "slide-in-bottom"
+				}
+			}
+		},
+		{
+			"path": "pages/public/web",
+			"style": {
+				"navigationBarTitleText": "" 
+			}
+		},
+		{
+			"path": "pages/news/newsDetail",
+			"style": {
+				"navigationBarTitleText": "",
+				"enablePullDownRefresh": false,
+				"app-plus": {
+					"bounce": "none",
+					"scrollIndicator": "none"
+				}
+			}
+		},
+				{
+					"path": "pages/menDian/netAd",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "网络广告",
+						"enablePullDownRefresh": false,
+						"app-plus": {
+							"bounce": "none",
+							"scrollIndicator": "none"
+						}
+					}
+				},
+				{
+					"path": "pages/menDian/tempAd",
+					"style": {
+						"navigationBarTitleText": "临时广告",
+						"enablePullDownRefresh": false,
+						"app-plus": {
+							"bounce": "none",
+							"scrollIndicator": "none"
+						}
+					}
+				},
+				{
+					"path": "pages/chat/chat",
+					"style": {
+						"navigationBarTitleText": "聊天",
+						"navigationStyle": "custom",
+						"app-plus": {
+							"bounce": "none"
+						}
+					}
+				}
+    ],
+	"subPackages": [{
+		"root": "pagesSub",
+		"pages": [
+			{
+				"path": "index/peopleNearby",
+				"style": {
+					"navigationBarTitleText": "附近的人",
+					"enablePullDownRefresh": false
+				}
+			},
+			{
+				"path": "index/blindDate",
+				"style": {
+					"navigationBarTitleText": "",
+					"enablePullDownRefresh": false
+				}
+			},
+			{
+				"path": "index/blindHistoryDates",
+				"style": {
+					"navigationBarTitleText": "",
+					"enablePullDownRefresh": false
+				}
+			},
+			{
+				"path": "user/userMeans",
+				"style": {
+					"navigationBarTitleText": "资料填写",
+					"enablePullDownRefresh": false,
+					"app-plus": {
+						"bounce": "none"
+					}
+				}
+			}
+		]
+	}],
+	"easycom": {
+		"^w-(.*)": "@/uni_modules/wmf-code/components/w-$1/w-$1.vue"
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "同城交友",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#f8f8f8"
+	},
+	"tabBar": {
+		"color": "#C0C4CC",
+		"selectedColor": "#FD7031",
+		"borderStyle": "white",
+		"backgroundColor": "#ffffff",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/index/tab01.jpeg",
+				"selectedIconPath": "static/index/tab01.jpeg",
+				"text": "同城圈"
+			},
+			// {
+			// 	"pagePath": "pages/makingFriends/makingFriends",
+			// 	"iconPath": "static/index/tab02.jpeg",
+			// 	"selectedIconPath": "static/index/tab02.jpeg",
+			// 	"text": "交友相亲"
+			// },
+			// {
+			// 	"pagePath": "pages/ourCity/ourLocalNews",
+			// 	"iconPath": "static/index/tab03.jpeg",
+			// 	"selectedIconPath": "static/index/tab03.jpeg",
+			// 	"text": "同城消息"
+			// },
+			{
+				"pagePath": "pages/menDian/netAd",
+				"iconPath": "static/index/tab04.jpeg",
+				"selectedIconPath": "static/index/tab04.jpeg",
+				"text": "缘分天空"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"iconPath": "static/index/tab05.jpeg",
+				"selectedIconPath": "static/index/tab05.jpeg",
+				"text": "我的同城"
+			}
+		]
+	}
+}

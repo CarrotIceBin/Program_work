@@ -1,0 +1,50 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.container.data-v-e197193a {
+  padding: 20rpx;
+}
+.form-container.data-v-e197193a {
+  padding: 40rpx 20rpx;
+}
+.form-item.data-v-e197193a {
+  margin-bottom: 30rpx;
+}
+.form-item .label.data-v-e197193a {
+  font-size: 28rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+.form-item .input.data-v-e197193a {
+  height: 80rpx;
+  border: 1px solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  background-color: #fff;
+}
+.confirm-btn.data-v-e197193a {
+  background: #FD7031;
+  color: #fff;
+  text-align: center;
+  height: 88rpx;
+  line-height: 88rpx;
+  border-radius: 10rpx;
+  font-size: 32rpx;
+  margin-top: 60rpx;
+}
+.confirm-btn.data-v-e197193a:active {
+  opacity: 0.8;
+}
+.form-text.data-v-e197193a {
+  font-weight: bold;
+  color: #ff0000;
+}
+

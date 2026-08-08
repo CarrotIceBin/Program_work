@@ -1,0 +1,217 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.page-container.data-v-a7dc6c0a {
+  background-color: #f8f9fa;
+  padding: 20rpx;
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+.form-card.data-v-a7dc6c0a {
+  background: #fff;
+  border-radius: 10rpx;
+  padding: 30rpx;
+  padding-bottom: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+.upload-section.data-v-a7dc6c0a {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20rpx;
+  margin-bottom: 10rpx;
+}
+.label.data-v-a7dc6c0a {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 20rpx;
+}
+.image-grid.data-v-a7dc6c0a {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+.image-slot.data-v-a7dc6c0a {
+  width: calc((100% - 48rpx) / 4);
+  aspect-ratio: 1;
+  border-radius: 8rpx;
+  overflow: hidden;
+  position: relative;
+}
+.image-wrapper.data-v-a7dc6c0a {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.preview-image.data-v-a7dc6c0a {
+  width: 100%;
+  height: 100%;
+  opacity: unset;
+}
+.delete-btn.data-v-a7dc6c0a {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.delete-icon.data-v-a7dc6c0a {
+  color: #fff;
+  font-size: 28rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+.upload-placeholder.data-v-a7dc6c0a {
+  width: 100%;
+  height: 100%;
+  border: 2rpx dashed #d9d9d9;
+  border-radius: 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  cursor: pointer;
+}
+.placeholder-icon.data-v-a7dc6c0a {
+  font-size: 48rpx;
+  color: #ccc;
+  margin-bottom: 8rpx;
+}
+.placeholder-title.data-v-a7dc6c0a {
+  font-size: 20rpx;
+  color: #666;
+  text-align: center;
+  margin-bottom: 4rpx;
+}
+.upload-hint.data-v-a7dc6c0a {
+  font-size: 18rpx;
+  color: #999;
+  text-align: center;
+}
+.submit-btn.data-v-a7dc6c0a {
+  width: 100%;
+  height: 88rpx;
+  margin-top: 20rpx;
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #fd7031, #fd8c59);
+  border: none;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 16rpx rgba(253, 112, 49, 0.3);
+}
+.submit-btn[disabled].data-v-a7dc6c0a {
+  background: #c0c4cc;
+  color: #fff;
+  box-shadow: none;
+}
+/* 协议勾选样式 */
+.agreement-section.data-v-a7dc6c0a {
+  padding: 40rpx 0 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.agreement-check.data-v-a7dc6c0a {
+  display: flex;
+  align-items: center;
+}
+.checkbox.data-v-a7dc6c0a {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid #ddd;
+  border-radius: 6rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.checkbox.checked.data-v-a7dc6c0a {
+  background: linear-gradient(135deg, #FD7031, #FF8F5E);
+  border-color: #FD7031;
+}
+.agreement-text.data-v-a7dc6c0a {
+  font-size: 26rpx;
+  color: #666;
+  flex: 1;
+  word-break: break-all;
+}
+.agreement-link.data-v-a7dc6c0a {
+  color: #FD7031;
+  text-decoration: underline;
+}
+/* 协议弹窗样式 */
+.agree-popup.data-v-a7dc6c0a {
+  background: #fff;
+  border-radius: 20rpx 20rpx 0 0;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+.agree-header.data-v-a7dc6c0a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.agree-title.data-v-a7dc6c0a {
+  font-size: 34rpx;
+  font-weight: 600;
+  color: #333;
+}
+.agree-close.data-v-a7dc6c0a {
+  font-size: 48rpx;
+  color: #999;
+  line-height: 1;
+  padding: 0 20rpx;
+}
+.agree-content.data-v-a7dc6c0a {
+  flex: 1;
+  padding: 30rpx;
+  max-height: 60vh;
+}
+.agree-section.data-v-a7dc6c0a {
+  margin-bottom: 30rpx;
+}
+.agree-text.data-v-a7dc6c0a {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 16rpx;
+}
+.agree-detail.data-v-a7dc6c0a {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.8;
+  white-space: pre-line;
+}
+.agree-bottom.data-v-a7dc6c0a {
+  padding: 30rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+.agree-btn.data-v-a7dc6c0a {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #FD7031, #fd8c59);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 500;
+  border-radius: 12rpx;
+  border: none;
+}
+

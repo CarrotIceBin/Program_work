@@ -1,0 +1,43 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.page.data-v-f9915e72 {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 12px;
+}
+.card.data-v-f9915e72 {
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.feature-row.data-v-f9915e72 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 16px;
+  border-bottom: 1px solid #f5f5f5;
+}
+.feature-row.data-v-f9915e72:last-child {
+  border-bottom: none;
+}
+.feature-row .label.data-v-f9915e72 {
+  font-size: 15px;
+  color: #1a1a1a;
+}
+.feature-row .row-right.data-v-f9915e72 {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.feature-row .row-right .version-value.data-v-f9915e72 {
+  font-size: 14px;
+  color: #999;
+}
+

@@ -1,0 +1,102 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.info-edit-container.data-v-f5113d18 {
+  height: 100vh;
+  background: #f5f6fa;
+  padding: 20rpx;
+}
+.info-item.data-v-f5113d18 {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 10rpx;
+  padding: 28rpx 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+}
+.item-label.data-v-f5113d18 {
+  font-size: 30rpx;
+  color: #333333;
+  width: 140rpx;
+  flex-shrink: 0;
+}
+.item-input.data-v-f5113d18 {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  padding: 0 10rpx;
+}
+.item-input.data-v-f5113d18::-webkit-input-placeholder {
+  color: #cccccc;
+}
+.item-input.data-v-f5113d18::placeholder {
+  color: #cccccc;
+}
+.info-item-picker.data-v-f5113d18 {
+  cursor: pointer;
+}
+.info-item-picker .item-value.data-v-f5113d18 {
+  flex: 1;
+  font-size: 30rpx;
+  color: #333;
+  text-align: right;
+  margin-right: 10rpx;
+}
+.address-container.data-v-f5113d18 {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 10rpx 0;
+}
+.address-container .address-item.data-v-f5113d18 {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.address-container .address-item.data-v-f5113d18:last-child {
+  border-bottom: none;
+}
+.address-container .address-item .address-label.data-v-f5113d18 {
+  font-size: 30rpx;
+  color: #666;
+  width: 60rpx;
+  flex-shrink: 0;
+}
+.save-btn.data-v-f5113d18 {
+  margin-top: 40rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  text-align: center;
+  background: #FD7031;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 500;
+  border-radius: 10rpx;
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4);
+}
+.data-v-f5113d18:deep(.uni-data-select) {
+  width: 100%;
+}
+:deep(.uni-data-select) .uni-select.data-v-f5113d18 {
+  border: none;
+  padding: 0;
+  min-height: auto;
+}
+:deep(.uni-data-select) .uni-select__input-text.data-v-f5113d18 {
+  font-size: 30rpx;
+  color: #333;
+}
+.data-v-f5113d18 .picker-header .cancel {
+  background-color: unset !important;
+}
+.data-v-f5113d18 .picker-header .submit {
+  background-color: #FD7031 !important;
+}
+

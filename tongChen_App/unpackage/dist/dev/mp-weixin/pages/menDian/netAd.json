@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "navigationBarTitleText": "网络广告",
+  "enablePullDownRefresh": false,
+  "usingComponents": {}
+}

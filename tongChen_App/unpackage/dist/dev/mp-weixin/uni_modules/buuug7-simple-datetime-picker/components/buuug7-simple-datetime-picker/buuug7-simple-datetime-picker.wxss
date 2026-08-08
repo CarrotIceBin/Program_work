@@ -1,0 +1,90 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.buuug7-simple-datetime-picker {
+  position: relative;
+  z-index: 999;
+}
+.buuug7-simple-datetime-picker picker-view {
+  height: 100%;
+}
+.buuug7-simple-datetime-picker .mask {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+.buuug7-simple-datetime-picker .mask.show {
+  visibility: visible;
+  opacity: 1;
+}
+.buuug7-simple-datetime-picker .wrap {
+  z-index: 1001;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  transition: all 0.3s ease;
+  -webkit-transform: translateY(100%);
+          transform: translateY(100%);
+}
+.buuug7-simple-datetime-picker .wrap.show {
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+.buuug7-simple-datetime-picker .picker-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 8px;
+  background-color: #fafafa;
+  background-color: #fff;
+}
+.buuug7-simple-datetime-picker .picker-body {
+  width: 100%;
+  height: 420rpx;
+  overflow: hidden;
+  background-color: #fff;
+}
+.buuug7-simple-datetime-picker .column-item {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.buuug7-simple-datetime-picker .btn-picker {
+  position: relative;
+  display: inline-block;
+  padding-left: 10px;
+  padding-right: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+  line-height: 2;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  background-color: #eee;
+  font-size: 14px;
+  border-radius: 3px;
+  color: #000;
+  cursor: pointer;
+}
+.buuug7-simple-datetime-picker .btn-picker.submit {
+  background-color: #488ee9;
+  color: #fff;
+}
+

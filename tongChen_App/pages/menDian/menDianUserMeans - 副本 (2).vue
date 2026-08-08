@@ -1,0 +1,684 @@
+<template>
+	<view class="page-container">
+		<view class="form-card">
+			<view class="upload-section">
+				<text class="label">走马灯（{{ viewImages.length }}/2）</text>
+				<view class="image-grid">
+					<view v-for="(item, index) in viewImageSlots" :key="index" class="image-slot">
+						<view v-if="item.url" class="image-wrapper">
+							<image :src="item.url" mode="aspectFill" class="preview-image" />
+							<view class="delete-btn" @click="deleteImage(index, 'view')">
+								<text class="delete-icon">×</text>
+							</view>
+						</view>
+						<view v-else class="upload-placeholder" @click="triggerViewUpload">
+							<text class="placeholder-icon">+</text>
+							<text class="placeholder-title">{{ item.title }}</text>
+							<text class="upload-hint">点击上传</text>
+						</view>
+					</view>
+					<!-- <view v-if="viewImages.length < 2" class="image-slot upload-trigger" @click="triggerViewUpload">
+						<text class="placeholder-icon">+</text>
+						<text class="upload-hint">添加图片</text>
+					</view> -->
+				</view>
+				<uni-file-picker
+					ref="viewPicker"
+					:value="viewImages"
+					file-mediatype="image"
+					file-extname="png,jpg,jpeg"
+					:limit="2 - viewImages.length"
+					@select="handleViewFileSelect"
+					@delete="handleViewFileDelete"
+					mode="grid"
+				></uni-file-picker>
+			</view>
+
+			<view class="upload-section">
+				<text class="label">详情图（{{ detailImages.length }}/16）</text>
+				<view class="image-grid">
+					<view v-for="(item, index) in detailImageSlots" :key="index" class="image-slot">
+						<view v-if="item.url" class="image-wrapper">
+							<image :src="item.url" mode="aspectFill" class="preview-image" />
+							<view class="delete-btn" @click="deleteImage(index, 'detail')">
+								<text class="delete-icon">×</text>
+							</view>
+						</view>
+						<view v-else class="upload-placeholder" @click="triggerDetailUpload">
+							<text class="placeholder-icon">+</text>
+							<text class="placeholder-title">{{ item.title }}</text>
+							<text class="upload-hint">点击上传</text>
+						</view>
+					</view>
+					<!-- <view v-if="detailImages.length < 16" class="image-slot upload-trigger" @click="triggerDetailUpload">
+						<text class="placeholder-icon">+</text>
+						<text class="upload-hint">添加图片</text>
+					</view> -->
+				</view>
+				<uni-file-picker
+					ref="detailPicker"
+					:value="detailImages"
+					file-mediatype="image"
+					file-extname="png,jpg,jpeg"
+					:limit="16 - detailImages.length"
+					@select="handleDetailFileSelect"
+					@delete="handleDetailFileDelete"
+					mode="grid"
+				></uni-file-picker>
+			</view>
+
+			<button class="submit-btn" :loading="isSubmitting" @click="handleSubmit">
+				{{ isSubmitting ? '提交中...' : '确定' }}
+			</button>
+		</view>
+	</view>
+</template>
+
+<script>
+import { qiniuUrl } from '@/utils/api.js';
+
+export default {
+	data() {
+		return {
+			isMenDian: 0,
+			menDianID: 0,
+			menDianNum: 0,
+			isSubmitting: false,
+			menDianImageData: [], // 原始图片数据
+			availableImgIDs: {
+				// 可复用的imgID
+				view: [], // 走马灯可用ID
+				detail: [] // 详情图可用ID
+			},
+			viewImages: [],
+			detailImages: [],
+			pendingFiles: {
+				view: [],
+				detail: []
+			},
+			viewImageTemplates: [
+				{ title: '走马灯一', sortID: '1', sortName: '走马灯' },
+				{ title: '走马灯二', sortID: '1', sortName: '走马灯' }
+			],
+			detailImageTemplates: [
+				{ title: '门头招牌', sortID: '2', sortName: '详情图' },
+				{ title: '门脸', sortID: '2', sortName: '详情图' },
+				{ title: '收银台', sortID: '2', sortName: '详情图' },
+				{ title: '左展示区一', sortID: '2', sortName: '详情图' },
+				{ title: '左展示区二', sortID: '2', sortName: '详情图' },
+				{ title: '左展示区三', sortID: '2', sortName: '详情图' },
+				{ title: '右展示区一', sortID: '2', sortName: '详情图' },
+				{ title: '右展示区二', sortID: '2', sortName: '详情图' },
+				{ title: '右展示区三', sortID: '2', sortName: '详情图' },
+				{ title: '中展示区一', sortID: '2', sortName: '详情图' },
+				{ title: '中展示区二', sortID: '2', sortName: '详情图' },
+				{ title: '中展示区三', sortID: '2', sortName: '详情图' },
+				{ title: '营业执照', sortID: '2', sortName: '详情图' },
+				{ title: '授权书', sortID: '2', sortName: '详情图' },
+				{ title: '资质证明一', sortID: '2', sortName: '详情图' },
+				{ title: '资质证明二', sortID: '2', sortName: '详情图' },
+				{ title: '法人身份证正面', sortID: '2', sortName: '详情图' },
+				{ title: '法人身份证反面', sortID: '2', sortName: '详情图' }
+			]
+		};
+	},
+
+	computed: {
+		viewImageSlots() {
+			const slots = [];
+			this.viewImageTemplates.forEach((template) => {
+				const existing = this.menDianImageData.find((item) => item.sortName === template.sortName && item.title === template.title);
+				if (existing) {
+					slots.push({
+						imgID: existing.imgID,
+						url: existing.url || '',
+						title: existing.title || template.title,
+						sortName: existing.sortName,
+						isLocal: false
+					});
+				} else {
+					slots.push({
+						imgID: 0,
+						url: '',
+						title: template.title,
+						sortName: template.sortName,
+						isLocal: false
+					});
+				}
+			});
+			return slots;
+		},
+
+		detailImageSlots() {
+			const slots = [];
+			this.detailImageTemplates.forEach((template) => {
+				const existing = this.menDianImageData.find((item) => item.sortName === template.sortName && item.title === template.title);
+				if (existing) {
+					slots.push({
+						imgID: existing.imgID,
+						url: existing.url || '',
+						title: existing.title || template.title,
+						sortName: existing.sortName,
+						isLocal: false
+					});
+				} else {
+					slots.push({
+						imgID: 0,
+						url: '',
+						title: template.title,
+						sortName: template.sortName,
+						isLocal: false
+					});
+				}
+			});
+			return slots;
+		}
+	},
+
+	onLoad(option) {
+		const { menDianID, menDianNum } = option;
+		this.menDianID = menDianID || 0;
+		this.menDianNum = menDianNum || 0;
+		this.loadImageList();
+	},
+
+	methods: {
+		async loadImageList() {
+			try {
+				const res = await this.$http('imgPoolListManageByUser', {
+					imgID: this.menDianID,
+					num: this.menDianNum,
+					token: uni.getStorageSync('token') || ''
+				});
+
+				if (res.code == 0) {
+					this.processImageData(res.imgList);
+				} else {
+					uni.showToast({ title: res.msg, icon: 'none' });
+				}
+			} catch (error) {
+				console.error('加载图片失败:', error);
+				uni.showToast({ title: '加载失败', icon: 'none' });
+			}
+		},
+
+		processImageData(data = []) {
+			this.menDianImageData = data;
+
+			// 初始化可用ID列表
+			this.availableImgIDs = {
+				view: data.filter((item) => item.sortName === '走马灯' && (!item.url || item.url.trim() === '')).map((item) => item.imgID),
+				detail: data.filter((item) => item.sortName === '详情图' && (!item.url || item.url.trim() === '')).map((item) => item.imgID)
+			};
+
+			const configs = [
+				{ key: 'viewImages', sortName: '走马灯' },
+				{ key: 'detailImages', sortName: '详情图' }
+			];
+
+			configs.forEach((config) => {
+				this[config.key] = data.filter((item) => item.sortName === config.sortName && item.url && item.url.trim() !== '').map((item) => this.createImageItem(item, false));
+			});
+		},
+
+		triggerViewUpload() {
+			this.$refs.viewPicker?.chooseFile?.();
+		},
+
+		triggerDetailUpload() {
+			this.$refs.detailPicker?.chooseFile?.();
+		},
+
+		deleteImage(index, type) {
+			const slots = type === 'view' ? this.viewImageSlots : this.detailImageSlots;
+			const item = slots[index];
+
+			if (!item || !item.imgID) return;
+
+			this.handleFileDelete({ index }, type);
+		},
+
+		createImageItem(item, isLocal = false) {
+			const baseItem = {
+				imgID: item.imgID || 0,
+				url: item.url || '',
+				remark: item.remark || '',
+				sortName: item.sortName || ''
+			};
+
+			return isLocal
+				? {
+						...baseItem,
+						url: item.path,
+						extname: item.extname || 'jpg',
+						size: item.size,
+						isLocal: true,
+						localPath: item.path,
+						file: item
+				  }
+				: {
+						...baseItem,
+						extname: this.getFileExtension(item.url),
+						isLocal: false
+				  };
+		},
+
+		getFileExtension(url) {
+			return url?.match(/\.(png|jpg|jpeg)$/i)?.[1]?.toLowerCase() || 'jpg';
+		},
+
+		handleViewFileSelect(e) {
+			this.handleFileSelect(e.tempFiles || [], 'view');
+		},
+		handleViewFileDelete(e) {
+			this.handleFileDelete(e, 'view');
+		},
+		handleDetailFileSelect(e) {
+			this.handleFileSelect(e.tempFiles || [], 'detail');
+		},
+		handleDetailFileDelete(e) {
+			this.handleFileDelete(e, 'detail');
+		},
+
+		handleFileSelect(files, type) {
+			files.forEach((file) => {
+				const imageItem = this.createImageItem(
+					{
+						...file,
+						sortName: type === 'view' ? '走马灯' : '详情图'
+					},
+					true
+				);
+				this[`${type}Images`].push(imageItem);
+				this.pendingFiles[type].push(file);
+			});
+		},
+
+		async handleFileDelete(e, type) {
+			const index = e.index;
+			const images = this[`${type}Images`];
+
+			if (index < 0 || index >= images.length) return;
+
+			const item = images[index];
+
+			// 判断是否为已存在的远程图片（有imgID且不是本地文件）
+			const isRemoteImage = item.imgID && item.imgID > 0 && !item.isLocal;
+
+			if (isRemoteImage) {
+				try {
+					uni.showLoading({ title: '删除中...', icon: 'none' });
+					const res = await this.$http('imgPoolDel', {
+						imgID: item.imgID,
+						token: uni.getStorageSync('token')
+					});
+
+					if (res.code == 0) {
+						// 将imgID添加到可用ID列表中，以便后续上传使用
+						this.availableImgIDs[type].push(item.imgID);
+
+						// 从原始数据中更新状态
+						const dataIndex = this.menDianImageData.findIndex((dataItem) => dataItem.imgID == item.imgID);
+						if (dataIndex > -1) {
+							this.menDianImageData[dataIndex].url = '';
+						}
+
+						uni.showToast({ title: '删除成功', icon: 'none' });
+					} else {
+						uni.showToast({ title: res.msg || '删除失败', icon: 'none' });
+						return; // 删除失败，不执行后续操作
+					}
+				} catch (error) {
+					console.error('删除图片失败:', error);
+				} finally {
+					uni.hideLoading();
+				}
+			}
+
+			// 如果是本地文件，从待上传列表中移除
+			if (item.isLocal) {
+				const fileIndex = this.pendingFiles[type].findIndex((f) => f.path === item.localPath);
+				if (fileIndex > -1) {
+					this.pendingFiles[type].splice(fileIndex, 1);
+				}
+			}
+
+			// 移除图片
+			images.splice(index, 1);
+		},
+
+		async uploadFileToQiniu(file) {
+			const tokenRes = await this.$http('qiNiuToken', {
+				token: uni.getStorageSync('token')
+			});
+
+			return new Promise((resolve, reject) => {
+				uni.uploadFile({
+					url: 'https://upload.qiniup.com',
+					filePath: file.path,
+					name: 'file',
+					formData: { token: tokenRes.para.upToken },
+					success: (res) => {
+						if (res.statusCode == 200) {
+							try {
+								const result = JSON.parse(res.data);
+								resolve(qiniuUrl + result.hash);
+							} catch {
+								reject(new Error('解析结果失败'));
+							}
+						} else {
+							reject(new Error('上传失败'));
+						}
+					},
+					fail: reject
+				});
+			});
+		},
+
+		async uploadPendingFiles() {
+			const result = { viewList: [], detailList: [] };
+
+			for (const type of ['view', 'detail']) {
+				const pendingCount = this.pendingFiles[type].length;
+				const availableIDs = this.availableImgIDs[type] || [];
+
+				// 只上传有可用ID的图片
+				let usedIDs = []; // 记录已使用的ID
+				for (let i = 0; i < Math.min(pendingCount, availableIDs.length); i++) {
+					try {
+						const url = await this.uploadFileToQiniu(this.pendingFiles[type][i]);
+						const imgID = availableIDs[i];
+						usedIDs.push(imgID); // 记录使用的ID
+
+						result[`${type}List`].push({
+							imgID: imgID,
+							url,
+							remark: '',
+							sortName: type === 'view' ? '走马灯' : '详情图'
+						});
+					} catch (error) {
+						console.error(`${type}图片上传失败:`, error);
+					}
+				}
+
+				// 从可用ID列表中移除已使用的ID
+				if (usedIDs.length > 0) {
+					this.availableImgIDs[type] = availableIDs.filter((id) => !usedIDs.includes(id));
+				}
+			}
+
+			return result;
+		},
+
+		getExistingImages(type) {
+			return this[`${type}Images`]
+				.filter((item) => {
+					// 过滤条件：不是本地文件、有imgID、有URL、URL不为空、且URL不是以qiniuUrl开头
+					return !item.isLocal && item.imgID > 0 && item.url && item.url.trim() !== '' && !item.url.startsWith(qiniuUrl);
+				})
+				.map((item) => ({
+					imgID: item.imgID,
+					url: item.url,
+					remark: item.remark || '',
+					sortName: item.sortName
+				}));
+		},
+
+		async handleSubmit() {
+			if (this.isSubmitting) return;
+
+			this.isSubmitting = true;
+
+			try {
+				// 上传新图片
+				let uploadedUrls = { viewList: [], detailList: [] };
+				if (this.pendingFiles.view.length || this.pendingFiles.detail.length) {
+					uni.showLoading({ title: '正在上传图片...', mask: true });
+					uploadedUrls = await this.uploadPendingFiles();
+					uni.hideLoading();
+				}
+
+				// 合并所有图片数据
+				const allImageList = [...this.getExistingImages('view'), ...this.getExistingImages('detail'), ...uploadedUrls.viewList, ...uploadedUrls.detailList];
+
+				if (!allImageList.length) {
+					uni.showToast({ title: '请至少上传一张图片', icon: 'none' });
+					return;
+				}
+
+				// 批量提交
+				const { success, fail } = await this.batchSubmitImages(allImageList);
+
+				// 显示结果
+				this.showSubmitResult(success, fail);
+
+				// 清空并返回
+				this.pendingFiles = { view: [], detail: [] };
+				setTimeout(() => {
+					// #ifdef MP-WEIXIN
+					const pages = getCurrentPages();
+					const prevPage = pages[pages.length - 2];
+					prevPage.$vm.isMenDian = this.isMenDian;
+					prevPage.onShow();
+					// #endif
+
+					// #ifdef APP || H5
+					uni.$emit('menDianMeans');
+					// #endif
+
+					uni.navigateBack({ delta: 1 });
+				}, 500);
+			} catch (error) {
+				console.error('提交失败:', error);
+				uni.showToast({
+					title: error.message || '网络错误，请重试',
+					icon: 'none'
+				});
+			} finally {
+				this.isSubmitting = false;
+			}
+		},
+
+		async batchSubmitImages(imageList) {
+			let success = 0,
+				fail = 0;
+
+			for (const imageItem of imageList) {
+				try {
+					const res = await this.$http('imgPoolEdit', {
+						imgID: imageItem.imgID || 0,
+						url: imageItem.url || '',
+						remark: imageItem.remark || '',
+						sortName: imageItem.sortName || '',
+						token: uni.getStorageSync('token')
+					});
+
+					if (res.code == 0) {
+						success++;
+					} else {
+						fail++;
+						console.error('单条图片保存失败:', res.msg);
+					}
+				} catch (error) {
+					fail++;
+					console.error('单条图片提交失败:', error);
+				}
+
+				await this.delay(100);
+			}
+
+			return { success, fail };
+		},
+
+		showSubmitResult(success, fail) {
+			if (fail === 0) {
+				uni.showToast({ title: `保存成功，共${success}张图片`, icon: 'none', duration: 3000 });
+			} else {
+				uni.showToast({ title: `保存完成，成功${success}张，失败${fail}张`, icon: 'none', duration: 3000 });
+			}
+		},
+
+		delay(ms) {
+			return new Promise((resolve) => setTimeout(resolve, ms));
+		}
+	}
+};
+</script>
+
+<style scoped lang="scss">
+.page-container {
+	background-color: #f8f9fa;
+	padding: 20rpx;
+	height: 100vh;
+	touch-action: none;
+}
+
+.form-card {
+	background: #fff;
+	border-radius: 10rpx;
+	padding: 30rpx;
+	box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.upload-section {
+	display: flex;
+	flex-direction: column;
+	padding-bottom: 20rpx;
+
+	&:last-child {
+		border-bottom: none;
+		margin-bottom: 0;
+	}
+}
+
+.label {
+	font-size: 30rpx;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 20rpx;
+}
+
+.image-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16rpx;
+}
+
+.image-slot {
+	width: calc((100% - 48rpx) / 4);
+	aspect-ratio: 1;
+	border-radius: 8rpx;
+	overflow: hidden;
+	position: relative;
+}
+
+.image-wrapper {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.preview-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.delete-btn {
+	position: absolute;
+	top: 8rpx;
+	right: 8rpx;
+	width: 40rpx;
+	height: 40rpx;
+	background: rgba(0, 0, 0, 0.6);
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.delete-icon {
+	color: #fff;
+	font-size: 28rpx;
+	font-weight: bold;
+	line-height: 1;
+}
+
+.upload-placeholder {
+	width: 100%;
+	height: 100%;
+	border: 2rpx dashed #d9d9d9;
+	border-radius: 8rpx;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background: #fafafa;
+}
+
+.placeholder-icon {
+	font-size: 48rpx;
+	color: #ccc;
+	margin-bottom: 8rpx;
+}
+
+.placeholder-title {
+	font-size: 20rpx;
+	color: #666;
+	text-align: center;
+	margin-bottom: 4rpx;
+}
+
+.upload-hint {
+	font-size: 18rpx;
+	color: #999;
+	text-align: center;
+}
+
+.upload-trigger {
+	border: 2rpx dashed #fd7031;
+	background: rgba(253, 112, 49, 0.05);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+.upload-trigger .placeholder-icon {
+	color: #fd7031;
+}
+
+.upload-trigger .upload-hint {
+	color: #fd7031;
+}
+
+.submit-btn {
+	width: 100%;
+	height: 88rpx;
+	margin-top: 20rpx;
+	font-size: 32rpx;
+	font-weight: 500;
+	color: #fff;
+	background: linear-gradient(135deg, #fd7031, lighten(#fd7031, 8%));
+	border: none;
+	border-radius: 12rpx;
+	box-shadow: 0 4rpx 16rpx rgba(#fd7031, 0.3);
+
+	&[disabled] {
+		background: #c0c4cc;
+		color: #fff;
+		box-shadow: none;
+	}
+}
+
+.uni-file-picker {
+	position: fixed;
+	left: -9999px;
+	top: -9999px;
+	opacity: 0;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	pointer-events: none;
+}
+</style>

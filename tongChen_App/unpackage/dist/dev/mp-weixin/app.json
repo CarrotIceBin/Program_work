@@ -1,0 +1,86 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/index/dynamic",
+    "pages/index/discuss",
+    "pages/index/headshots",
+    "pages/ourCity/ourLocalNews",
+    "pages/makingFriends/makingFriends",
+    "pages/makingFriends/malingUser",
+    "pages/user/user",
+    "pages/user/userVideo",
+    "pages/user/aboutUs",
+    "pages/user/notification",
+    "pages/userProfile/userName",
+    "pages/userProfile/userinfo",
+    "pages/userProfile/basics",
+    "pages/userProfile/xiangQin",
+    "pages/userProfile/xiangQinOther",
+    "pages/userProfile/notice",
+    "pages/userProfile/qualification",
+    "pages/userProfile/contactUs",
+    "pages/userProfile/features",
+    "pages/menDian/menDianUser",
+    "pages/menDian/menDianAddBy",
+    "pages/menDian/menDianUserMeans",
+    "pages/menDian/menDianList",
+    "pages/menDian/menDianInfo",
+    "pages/menDian/goodsDetail",
+    "pages/public/phonLogin",
+    "pages/public/loginPwd",
+    "pages/public/pwdfoget",
+    "pages/public/reg",
+    "pages/public/question",
+    "pages/public/pwdResetCheck",
+    "pages/public/login",
+    "pages/public/web",
+    "pages/news/newsDetail",
+    "pages/menDian/netAd",
+    "pages/menDian/tempAd",
+    "pages/chat/chat"
+  ],
+  "subPackages": [
+    {
+      "root": "pagesSub",
+      "pages": [
+        "index/peopleNearby",
+        "index/blindDate",
+        "index/blindHistoryDates",
+        "user/userMeans"
+      ]
+    }
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "同城交友",
+    "navigationBarBackgroundColor": "#FFFFFF",
+    "backgroundColor": "#f8f8f8"
+  },
+  "tabBar": {
+    "color": "#C0C4CC",
+    "selectedColor": "#FD7031",
+    "borderStyle": "white",
+    "backgroundColor": "#ffffff",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "iconPath": "static/index/tab01.jpeg",
+        "selectedIconPath": "static/index/tab01.jpeg",
+        "text": "同城圈"
+      },
+      {
+        "pagePath": "pages/menDian/netAd",
+        "iconPath": "static/index/tab04.jpeg",
+        "selectedIconPath": "static/index/tab04.jpeg",
+        "text": "缘分天空"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "iconPath": "static/index/tab05.jpeg",
+        "selectedIconPath": "static/index/tab05.jpeg",
+        "text": "我的同城"
+      }
+    ]
+  },
+  "usingComponents": {}
+}

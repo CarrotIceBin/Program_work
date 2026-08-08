@@ -1,0 +1,57 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.username.data-v-7a086500 {
+  background-color: #F0F0F0F0;
+  padding-top: 20rpx;
+  min-height: 100vh;
+  touch-action: none;
+}
+.updatePassword_item.data-v-7a086500 {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 10rpx;
+  height: 110rpx;
+  background: #fff;
+  padding: 0 30rpx;
+}
+.updatePassword_item .item_texe.data-v-7a086500 {
+  flex-shrink: 0;
+  width: 250rpx;
+  font-size: 32rpx;
+  color: #303133;
+}
+.updatePassword_item .item_input.data-v-7a086500 {
+  flex: 1;
+  font-size: 32rpx;
+  color: #303133;
+}
+.updatePassword_item .icon-shouhuodizhi.data-v-7a086500 {
+  font-size: 36rpx;
+  color: #303133;
+}
+.username_title.data-v-7a086500 {
+  font-size: 30rpx;
+  padding: 20rpx 30rpx 0;
+  color: #a5a5a5;
+}
+.add-btn.data-v-7a086500 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 690rpx;
+  height: 88rpx;
+  margin: 60rpx auto;
+  font-size: 32rpx;
+  color: #FFFFFF;
+  border-radius: 10rpx;
+  background: #FD7031;
+}
+

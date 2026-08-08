@@ -1,0 +1,110 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.pickerMask.data-v-553f18c6 {
+  position: fixed;
+  z-index: 1002;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+}
+.picker-box.data-v-553f18c6 {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  transition: all 0.3s ease;
+  -webkit-transform: translateY(100%);
+          transform: translateY(100%);
+  z-index: 1002;
+}
+.picker-box .operate-box.data-v-553f18c6 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18rpx 30rpx;
+  background-color: #ffffff;
+  text-align: center;
+  font-size: 30rpx;
+  border-bottom: 2rpx solid #e5e5e5;
+}
+.picker-box .operate-box .sumb.data-v-553f18c6 {
+  color: rgba(36, 178, 118, 0.86);
+}
+.picker-show.data-v-553f18c6 {
+  -webkit-transform: translateY(0);
+          transform: translateY(0);
+}
+.picker-view.data-v-553f18c6 {
+  width: 750rpx;
+  height: 600rpx;
+  background-color: #ffffff;
+}
+.picker-view .picker-item.data-v-553f18c6 {
+  height: 100rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.select-picker.data-v-553f18c6 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+  font-size: 1em;
+  line-height: 38px;
+  overflow: hidden;
+}
+.is-input-error-border .select-picker-border.data-v-553f18c6 {
+  border-color: #dd524d;
+}
+.i-n.data-v-553f18c6 {
+  position: relative;
+  width: 20px;
+  margin-left: auto;
+  display: flex;
+  justify-content: center;
+}
+.i-n ._i.data-v-553f18c6 {
+  color: #d2d2d6;
+  font-size: 8px;
+}
+/* 可以变成箭头css 很厉害保留 */
+.select-picker-arrow-area.data-v-553f18c6 {
+  position: relative;
+  width: 20px;
+  margin-left: auto;
+  display: flex;
+  justify-content: center;
+  -webkit-transform: rotate(-45deg);
+          transform: rotate(-45deg);
+  -webkit-transform-origin: center;
+          transform-origin: center;
+}
+.select-picker-arrow.data-v-553f18c6 {
+  width: 7px;
+  height: 7px;
+  border-left: 1px solid #000;
+  border-bottom: 1px solid #000;
+}
+.placeholder-center.data-v-553f18c6 {
+  width: 100%;
+  text-align: right;
+  color: #303133;
+}
+.default.data-v-553f18c6 {
+  color: #303133;
+}
+.disabled-box.data-v-553f18c6 {
+  background: #f3f3f3;
+}
+

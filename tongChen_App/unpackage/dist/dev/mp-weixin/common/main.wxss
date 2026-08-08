@@ -1,0 +1,154 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+@font-face {
+  font-family: yticon;
+  font-weight: normal;
+  font-style: normal;
+  src: url("https://at.alicdn.com/t/font_1078604_w4kpxh0rafi.ttf") format("truetype");
+}
+.yticon {
+  font-family: "yticon" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon-iconfontshanchu1:before {
+  content: "\e619";
+}
+.icon-alipay:before {
+  content: "\e636";
+}
+.icon-shang:before {
+  content: "\e624";
+}
+.icon-fenxiang2:before {
+  content: "\e61e";
+}
+.icon-shoucang:before {
+  content: "\e645";
+}
+.icon-xuanzhong2:before {
+  content: "\e62f";
+}
+.icon-bianji:before {
+  content: "\e646";
+}
+.icon-xiatubiao--copy:before {
+  content: "\e608";
+}
+.icon-bangzhu1:before {
+  content: "\e63d";
+}
+.icon-zuojiantou-up:before {
+  content: "\e605";
+}
+.icon-weixinzhifu:before {
+  content: "\e61a";
+}
+.icon-fenlei1:before {
+  content: "\e620";
+}
+.icon-you:before {
+  content: "\e606";
+}
+.icon-fork:before {
+  content: "\e61b";
+}
+.icon-gouwuche:before {
+  content: "\e609";
+}
+.icon-xingxing:before {
+  content: "\e70b";
+}
+.icon-shouhuodizhi:before {
+  content: "\e712";
+}
+view,
+scroll-view,
+swiper,
+swiper-item,
+cover-view,
+cover-image,
+icon,
+text,
+rich-text,
+progress,
+button,
+checkbox,
+form,
+input,
+label,
+radio,
+slider,
+switch,
+textarea,
+navigator,
+audio,
+camera,
+image,
+video {
+  box-sizing: border-box;
+}
+.clamp {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+/*边框*/
+.b-b:after,
+.b-t:after {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: 0;
+  content: '';
+  -webkit-transform: scaleY(0.5);
+          transform: scaleY(0.5);
+  border-bottom: 1px solid #E4E7ED;
+}
+.b-b:after {
+  bottom: 0;
+}
+.b-t:after {
+  top: 0;
+}
+/* button样式改写 */
+uni-button,
+button {
+  height: 80rpx;
+  line-height: 80rpx;
+  font-size: 34rpx;
+  font-weight: normal;
+}
+uni-button.no-border:before, uni-button.no-border:after, button.no-border:before, button.no-border:after {
+  border: 0;
+}
+uni-button[type=default],
+button[type=default] {
+  color: #303133;
+}
+.placeholder {
+  color: #999999;
+}
+/* 设置默认颜色 */
+.ymcode_ml {
+  background-color: #FD7031;
+}
+::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  -webkit-appearance: none;
+  background: transparent !important;
+}
+

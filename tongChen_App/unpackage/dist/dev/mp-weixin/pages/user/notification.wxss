@@ -1,0 +1,102 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+page {
+  background-color: #f7f7f7;
+  padding-bottom: 30rpx;
+}
+.notice-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 150rpx;
+}
+.time {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80rpx;
+  padding-top: 10rpx;
+  font-size: 26rpx;
+  color: #7d7d7d;
+}
+.content {
+  width: 710rpx;
+  height: 220rpx;
+  padding: 20rpx 0 20rpx 20rpx;
+  background-color: #fff;
+  border-radius: 4rpx;
+}
+.content .left {
+  display: block;
+  float: left;
+}
+.content .left image {
+  width: 50rpx;
+  height: 50rpx;
+}
+.content .right {
+  display: block;
+  float: left;
+  width: 620rpx;
+  margin-left: 20rpx;
+}
+.content .right .header {
+  height: 60rpx;
+  border-bottom: 2rpx solid #DDDDDD;
+}
+.content .right .header .h1 {
+  display: block;
+  float: left;
+  font-size: 34rpx;
+}
+.content .right .header .h2 {
+  display: block;
+  float: right;
+  font-size: 28rpx;
+  color: #919293;
+  padding: 0 20rpx;
+}
+.content .right .title {
+  clear: both;
+  font-size: 28rpx;
+  padding: 16rpx 0;
+}
+.content .right .txt {
+  font-size: 28rpx;
+  color: #919293;
+}
+.page-bottom {
+  position: fixed;
+  left: 30rpx;
+  bottom: 30rpx;
+  z-index: 95;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 690rpx;
+  height: 140rpx;
+}
+.add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 690rpx;
+  height: 80rpx;
+  margin: 60rpx auto;
+  font-size: 32rpx;
+  color: #fff;
+  border-radius: 10rpx;
+}
+.nomore {
+  text-align: center;
+  padding: 180rpx 0;
+  color: #919293;
+}
+

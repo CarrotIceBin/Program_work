@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3a7afe"/>
+      <stop offset="100%" stop-color="#5b9bff"/>
+    </linearGradient>
+    <linearGradient id="coin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd93d"/>
+      <stop offset="100%" stop-color="#ffb800"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="512" height="512" rx="110" fill="url(#bg)"/>
+  
+  <!-- Subtle inner shadow/gradient overlay -->
+  <rect x="20" y="20" width="472" height="472" rx="95" fill="none" stroke="#ffffff" stroke-opacity="0.15" stroke-width="3"/>
+  
+  <!-- Refrigerator icon -->
+  <g transform="translate(80, 70)">
+    <rect x="0" y="0" width="120" height="180" rx="10" fill="#ffffff" fill-opacity="0.95"/>
+    <rect x="0" y="0" width="120" height="55" rx="10" fill="#ffffff" fill-opacity="0.8"/>
+    <line x1="0" y1="60" x2="120" y2="60" stroke="#3a7afe" stroke-width="3" stroke-opacity="0.5"/>
+    <circle cx="100" cy="28" r="5" fill="#3a7afe" fill-opacity="0.4"/>
+    <circle cx="100" cy="110" r="5" fill="#3a7afe" fill-opacity="0.4"/>
+  </g>
+  
+  <!-- Coin with yen symbol -->
+  <g transform="translate(260, 160)">
+    <circle cx="60" cy="60" r="55" fill="url(#coin)"/>
+    <circle cx="60" cy="60" r="55" fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity="0.3"/>
+    <!-- Yen symbol -->
+    <line x1="60" y1="35" x2="60" y2="85" stroke="#b8860b" stroke-width="5" stroke-linecap="round"/>
+    <line x1="40" y1="55" x2="80" y2="55" stroke="#b8860b" stroke-width="4" stroke-linecap="round"/>
+    <line x1="40" y1="70" x2="80" y2="70" stroke="#b8860b" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  
+  <!-- Small box/package icon -->
+  <g transform="translate(340, 320)">
+    <rect x="0" y="10" width="110" height="80" rx="6" fill="#ffffff" fill-opacity="0.9"/>
+    <polygon points="0,10 55,0 110,10" fill="#ffffff" fill-opacity="0.75"/>
+    <line x1="55" y1="0" x2="55" y2="90" stroke="#3a7afe" stroke-width="2" stroke-opacity="0.4"/>
+    <line x1="0" y1="30" x2="110" y2="30" stroke="#3a7afe" stroke-width="2" stroke-opacity="0.4"/>
+  </g>
+  
+  <!-- Small plus sign -->
+  <g transform="translate(120, 330)">
+    <circle cx="25" cy="25" r="22" fill="#ffffff" fill-opacity="0.9"/>
+    <line x1="25" y1="12" x2="25" y2="38" stroke="#3a7afe" stroke-width="5" stroke-linecap="round"/>
+    <line x1="12" y1="25" x2="38" y2="25" stroke="#3a7afe" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

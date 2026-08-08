@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "资料填写",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "uni-icons": "/uni_modules/uni-icons/components/uni-icons/uni-icons",
+    "uni-data-select": "/uni_modules/uni-data-select/components/uni-data-select/uni-data-select",
+    "hi-picker": "/uni_modules/hi-picker/components/hi-picker/hi-picker",
+    "buuug7-simple-datetime-picker": "/uni_modules/buuug7-simple-datetime-picker/components/buuug7-simple-datetime-picker/buuug7-simple-datetime-picker"
+  }
+}

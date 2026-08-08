@@ -1,0 +1,63 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.blind_history.data-v-5f5b24b8 {
+  padding: 0 10px 55px;
+  overflow-y: scroll;
+  height: calc(100vh - 45px);
+}
+.blind_history .blind_history_list.data-v-5f5b24b8 {
+  padding-top: 10px;
+  margin-bottom: 10px;
+}
+.blind_1.data-v-5f5b24b8 {
+  display: flex;
+  justify-content: "";
+  align-items: "";
+}
+.blind_1 .blind_1_image.data-v-5f5b24b8 {
+  width: 120px;
+  height: 120px;
+}
+.blind_1 .blind_1_image image.data-v-5f5b24b8 {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+}
+.blind_1 .blind_1_1.data-v-5f5b24b8 {
+  padding-left: 10px;
+  font-size: 15px;
+  line-height: 23px;
+  width: 70%;
+}
+.blind_1 .blind_1_1 .blind_1_1_1.data-v-5f5b24b8 {
+  font-size: 16px;
+  font-weight: bold;
+}
+.blind_wdxq.data-v-5f5b24b8 {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #FFF;
+  padding: 5px 10px;
+  height: 55px;
+}
+.blind_wdxq .blind_wdtext.data-v-5f5b24b8 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #00aa7f;
+  color: #FFF;
+  font-size: 15px;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+}
+

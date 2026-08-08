@@ -1,0 +1,1 @@
+<block wx:if="{{aboutUs!=''}}"><view class="yqmtxt data-v-c73df380" style="{{('color:'+txtColor+';')}}">{{aboutUs}}</view></block><block wx:else><view class="yqmtxt1 data-v-c73df380">暂无数据</view></block>

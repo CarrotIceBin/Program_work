@@ -1,0 +1,49 @@
+@charset "UTF-8";
+/* 页面左右间距 */
+/* 文字尺寸 */
+/*文字颜色*/
+/* 边框颜色 */
+/* 图片加载中颜色 */
+/* 行为相关颜色 */
+/* uni.scss */
+/* @import 'uview-ui/theme.scss'; */
+.people_list.data-v-5d027600 {
+  display: flex;
+  justify-content: space-between;
+  align-items: "";
+  padding: 0 10px;
+  margin-bottom: 20px;
+}
+.people_list .people_1.data-v-5d027600 {
+  display: flex;
+  justify-content: "";
+  align-items: center;
+}
+.people_list .people_1 .people_image.data-v-5d027600 {
+  width: 70px;
+  height: 70px;
+}
+.people_list .people_1 .people_image image.data-v-5d027600 {
+  width: 100%;
+  height: 100%;
+}
+.people_list .people_1 .people_title_age.data-v-5d027600 {
+  padding-left: 10px;
+  line-height: 23px;
+}
+.people_list .people_1 .people_title_age .people_name.data-v-5d027600 {
+  font-size: 16px;
+  font-weight: bold;
+}
+.people_list .people_1 .people_title_age .people_sex_age.data-v-5d027600 {
+  font-size: 14px;
+}
+.people_list .people_1 .people_2.data-v-5d027600 {
+  font-size: 14px;
+  color: #808080;
+}
+.people_list .people_3.data-v-5d027600 {
+  font-size: 14px;
+  color: #808080;
+}
+

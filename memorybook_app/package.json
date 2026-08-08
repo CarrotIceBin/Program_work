@@ -1,0 +1,12 @@
+{
+  "name": "memorybook_app",
+  "version": "1.0.0",
+  "description": "家电记账 App",
+  "main": "main.js",
+  "scripts": {
+    "install:xlsx": "npm install xlsx"
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
