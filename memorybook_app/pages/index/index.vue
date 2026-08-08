@@ -121,14 +121,14 @@
 				<view class="tool-arrow">›</view>
 			</view>
 			<view class="divider"></view>
-			<view class="tool-row" @click="loadMock">
+			<!-- <view class="tool-row" @click="loadMock">
 				<view class="tool-icon icon-mock">🗂</view>
 				<view class="tool-desc">
 					<view class="tool-title">加载演示数据</view>
 					<view class="text-muted mt-sm">6 种商品 + 9 笔进货 + 13 笔销售</view>
 				</view>
 				<view class="tool-arrow">›</view>
-			</view>
+			</view> -->
 			<view class="tool-row" @click="clearAll">
 				<view class="tool-icon icon-clear">🗑</view>
 				<view class="tool-desc">
