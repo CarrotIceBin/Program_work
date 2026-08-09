@@ -10,6 +10,7 @@
 					<view class="user-stats">
 						<view class="stat-btn" @click="meansClick">资料</view>
 						<view class="stat-btn" @click="walletClick">钱包</view>
+						<view class="stat-btn" @click="openFilter">筛选：{{ genderFilterText }}</view>
 					</view>
 				</view>
 			</view>
@@ -102,7 +103,8 @@ export default {
 				{ userID: 6, name: '点赞', num: 0 },
 				{ userID: 7, name: '评论', num: 0 }
 			],
-			userBottomData: []
+			userBottomData: [],
+			genderFilterText: ''
 		}
 	},
 	onLoad() {
@@ -113,6 +115,13 @@ export default {
 		this.userStatInfo();
 		this.getUserInfo();
 		this.selectItemList();
+		// 读取已保存的性别筛选
+		const saved = uni.getStorageSync('genderFilter');
+		if (saved === '男' || saved === '女') {
+			this.genderFilterText = saved;
+		} else {
+			this.genderFilterText = '';
+		}
 	},
 	methods: {
 		getUserInfo() {
@@ -168,6 +177,29 @@ export default {
 		walletClick() {
 			if (!this.checkLogin()) return;
 			uni.navigateTo({ url: '/pages/user/wallet' });
+		},
+		openFilter() {
+			if (!this.checkLogin()) return;
+			uni.showActionSheet({
+				itemList: ['全部', '男', '女'],
+				success: (res) => {
+					const map = ['all', '男', '女'];
+					const choice = map[res.tapIndex];
+					// 保存到本地存储，供index.vue读取
+					if (choice === 'all') {
+						uni.removeStorageSync('genderFilter');
+						this.genderFilterText = '全部';
+					} else {
+						uni.setStorageSync('genderFilter', choice);
+						this.genderFilterText = choice;
+					}
+					uni.showToast({
+						title: `已选择：${this.genderFilterText}`,
+						icon: 'none'
+					});
+				},
+				fail: () => {}
+			});
 		},
 		publishClick(){
 			if (!this.checkLogin()) return;

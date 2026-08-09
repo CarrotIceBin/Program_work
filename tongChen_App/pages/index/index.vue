@@ -404,7 +404,13 @@ export default {
 		},
 		currentTabData() {
 			const list = this.tabData[this.tabIndex] || [];
-			return list.map((item) => ({
+			// 性别筛选：从本地存储读取条件
+			const genderFilter = uni.getStorageSync('genderFilter');
+			let filtered = list;
+			if (genderFilter === '男' || genderFilter === '女') {
+				filtered = list.filter(item => item.userSex === genderFilter);
+			}
+			return filtered.map((item) => ({
 				...item,
 				iconUrls: item.iconUrl ? item.iconUrl.split(',') : []
 			}));
