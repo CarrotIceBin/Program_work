@@ -102,13 +102,13 @@ var components
 try {
   components = {
     uniNavBar: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar */ "uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar.vue */ 412))
+      return __webpack_require__.e(/*! import() | uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar */ "uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-nav-bar/components/uni-nav-bar/uni-nav-bar.vue */ 420))
     },
     uniIcons: function () {
-      return Promise.all(/*! import() | uni_modules/uni-icons/components/uni-icons/uni-icons */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-icons/components/uni-icons/uni-icons")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-icons/components/uni-icons/uni-icons.vue */ 386))
+      return Promise.all(/*! import() | uni_modules/uni-icons/components/uni-icons/uni-icons */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-icons/components/uni-icons/uni-icons")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-icons/components/uni-icons/uni-icons.vue */ 394))
     },
     uniPopup: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 405))
+      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 413))
     },
   }
 } catch (e) {
@@ -134,12 +134,28 @@ var render = function () {
   var _c = _vm._self._c || _h
   var g0 = _vm.commentsData.length
   var g1 = g0 > 0 ? _vm.commentsData.length : null
+  var l0 =
+    g0 > 0
+      ? _vm.__map(_vm.commentsData, function (item, index) {
+          var $orig = _vm.__get_orig(item)
+          var m0 = _vm.getItemLocation(item)
+          var m1 = m0 ? _vm.getItemLocation(item) : null
+          var m2 = _vm.isOwnComment(item)
+          return {
+            $orig: $orig,
+            m0: m0,
+            m1: m1,
+            m2: m2,
+          }
+        })
+      : null
   _vm.$mp.data = Object.assign(
     {},
     {
       $root: {
         g0: g0,
         g1: g1,
+        l0: l0,
       },
     }
   )
@@ -178,10 +194,14 @@ __webpack_require__.r(__webpack_exports__);
 "use strict";
 /* WEBPACK VAR INJECTION */(function(uni) {
 
+var _interopRequireDefault = __webpack_require__(/*! @babel/runtime/helpers/interopRequireDefault */ 4);
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+var _toConsumableArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ 18));
+//
+//
 //
 //
 //
@@ -321,6 +341,8 @@ var _default = {
       userID: "",
       popupTitle: "",
       newsID: 0,
+      currentUserid: "",
+      userInfoCache: {},
       userNewsInfo: {},
       newsInfo: {},
       commentsData: [],
@@ -354,6 +376,7 @@ var _default = {
   onLoad: function onLoad(options) {
     var getInfo = uni.getWindowInfo();
     this.topHeight = getInfo.statusBarHeight ? Number(getInfo.statusBarHeight) + 60 : 60;
+    this.currentUserid = String(uni.getStorageSync('userid') || '');
     if (options.userID) {
       this.userID = options.userID;
     }
@@ -410,6 +433,8 @@ var _default = {
       })).then(function (res) {
         if (res.code == 0) {
           _this3.commentsData = res.pinlunList;
+          // 为评论补充用户经纬度和地址
+          _this3.fillCommentLocation();
         } else {
           uni.showToast({
             title: res.msg,
@@ -420,8 +445,88 @@ var _default = {
         console.log(err);
       });
     },
-    newsPinLunAdd: function newsPinLunAdd() {
+    // 填充评论的地址信息
+    fillCommentLocation: function fillCommentLocation() {
       var _this4 = this;
+      var token = uni.getStorageSync('token') || '';
+      // 去重获取用户id
+      var userids = (0, _toConsumableArray2.default)(new Set(this.commentsData.map(function (i) {
+        return i.userid;
+      }).filter(Boolean)));
+      console.log('[评论定位] 需要获取地址的用户数=' + userids.length);
+      userids.forEach(function (userid) {
+        // 缓存中已有地址则直接填充
+        if (_this4.userInfoCache[userid] && _this4.userInfoCache[userid].address) {
+          _this4.applyAddressToComments(userid, _this4.userInfoCache[userid].address);
+          return;
+        }
+        // 调userInfoPublic获取经纬度
+        _this4.$http('userInfoPublic', JSON.stringify({
+          userid: userid,
+          token: token
+        })).then(function (res) {
+          if (res.code == 0 && res.userInfo && res.userInfo.lat && res.userInfo.lon) {
+            var u = res.userInfo;
+            console.log('[评论定位] userid=' + userid + ' 经纬度: lat=' + u.lat + ', lon=' + u.lon);
+            if (!_this4.userInfoCache[userid]) _this4.userInfoCache[userid] = {};
+            _this4.userInfoCache[userid].lat = u.lat;
+            _this4.userInfoCache[userid].lon = u.lon;
+            // 高德逆地理
+            _this4.reverseGeoComment(userid, Number(u.lon), Number(u.lat));
+          } else {
+            console.log('[评论定位] userid=' + userid + ' 无经纬度数据');
+            // 没有经纬度时不显示地址
+            _this4.applyAddressToComments(userid, '');
+          }
+        }).catch(function (err) {
+          console.log('[评论定位] userid=' + userid + ' userInfoPublic失败:', err);
+        });
+      });
+    },
+    // 高德逆地理编码（评论专用）
+    reverseGeoComment: function reverseGeoComment(userid, lon, lat) {
+      var _this5 = this;
+      var key = '93d81e19f28196780e2e7cb2120222ab';
+      var url = "https://restapi.amap.com/v3/geocode/regeo?key=".concat(key, "&location=").concat(lon, ",").concat(lat, "&extensions=base");
+      console.log('[评论定位] userid=' + userid + ' 调高德逆地理');
+      uni.request({
+        url: url,
+        method: 'GET',
+        success: function success(r) {
+          console.log('[评论定位] 高德响应:', JSON.stringify(r.data).substring(0, 300));
+          if (r.data && r.data.status === '1' && r.data.regeocode) {
+            var comp = r.data.regeocode.addressComponent || {};
+            var province = comp.province || '';
+            var city = comp.city || '';
+            var district = comp.district || '';
+            var parts = [city, district].filter(Boolean);
+            var address = parts.join('-');
+            console.log('[评论定位] userid=' + userid + ' 逆地理结果: ' + address);
+            if (address) {
+              if (!_this5.userInfoCache[userid]) _this5.userInfoCache[userid] = {};
+              _this5.userInfoCache[userid].address = address;
+              _this5.applyAddressToComments(userid, address);
+            }
+          } else {
+            console.log('[评论定位] userid=' + userid + ' 逆地理失败:', r.data ? r.data.info : '无数据');
+          }
+        },
+        fail: function fail(err) {
+          console.log('[评论定位] userid=' + userid + ' 逆地理请求失败:', err);
+        }
+      });
+    },
+    // 将地址写回该用户的所有评论
+    applyAddressToComments: function applyAddressToComments(userid, address) {
+      var _this6 = this;
+      this.commentsData.forEach(function (item, idx) {
+        if (String(item.userid) === String(userid)) {
+          _this6.$set(_this6.commentsData[idx], 'ipLocation', address);
+        }
+      });
+    },
+    newsPinLunAdd: function newsPinLunAdd() {
+      var _this7 = this;
       this.$http("newsPinLunAdd", JSON.stringify({
         newsID: this.newsID,
         superID: this.superID,
@@ -429,9 +534,9 @@ var _default = {
         token: uni.getStorageSync('token') || ""
       })).then(function (res) {
         if (res.code == 0) {
-          _this4.isDiscuss = false;
-          _this4.discussContent = "";
-          _this4.newsPinLunClient();
+          _this7.isDiscuss = false;
+          _this7.discussContent = "";
+          _this7.newsPinLunClient();
         } else {
           uni.showToast({
             title: res.msg,
@@ -520,7 +625,65 @@ var _default = {
       this.newsPinLunAdd();
     },
     // 分享到
-    handleShare: function handleShare() {}
+    handleShare: function handleShare() {},
+    // 判断是否为当前用户的评论
+    isOwnComment: function isOwnComment(item) {
+      if (!item || !item.userid) return false;
+      return String(item.userid) === this.currentUserid;
+    },
+    // 删除评论
+    deleteComment: function deleteComment(item) {
+      var _this8 = this;
+      uni.showModal({
+        title: '提示',
+        content: '确定删除这条评论吗？',
+        success: function success(res) {
+          if (res.confirm) {
+            _this8.$http('newsPinLunDel', JSON.stringify({
+              plID: item.plID,
+              token: uni.getStorageSync('token') || ""
+            })).then(function (res) {
+              if (res.code == 0) {
+                uni.showToast({
+                  title: '删除成功',
+                  icon: 'success'
+                });
+                _this8.newsPinLunClient();
+              } else {
+                uni.showToast({
+                  title: res.msg || '删除失败',
+                  icon: 'none'
+                });
+              }
+            }).catch(function (err) {
+              console.log('删除评论失败:', err);
+              // 兜底：本地删除
+              var idx = _this8.commentsData.findIndex(function (i) {
+                return i.plID === item.plID;
+              });
+              if (idx !== -1) {
+                _this8.commentsData.splice(idx, 1);
+                uni.showToast({
+                  title: '已删除',
+                  icon: 'success'
+                });
+              }
+            });
+          }
+        }
+      });
+    },
+    // 获取评论的位置显示
+    getItemLocation: function getItemLocation(item) {
+      if (!item) return '';
+      // 1. 优先显示省市区（逆地理结果）
+      if (item.ipLocation) return item.ipLocation;
+      // 2. 用经纬度兜底
+      if (item.lat && item.lon && String(item.lat) !== '0' && String(item.lon) !== '0') {
+        return '📍 ' + Number(item.lat).toFixed(4) + ', ' + Number(item.lon).toFixed(4);
+      }
+      return '';
+    }
   }
 };
 exports.default = _default;

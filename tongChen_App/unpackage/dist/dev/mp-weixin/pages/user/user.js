@@ -361,6 +361,12 @@ var _default = {
         url: '/pages/userProfile/basics'
       });
     },
+    walletClick: function walletClick() {
+      if (!this.checkLogin()) return;
+      uni.navigateTo({
+        url: '/pages/user/wallet'
+      });
+    },
     publishClick: function publishClick() {
       if (!this.checkLogin()) return;
       uni.navigateTo({

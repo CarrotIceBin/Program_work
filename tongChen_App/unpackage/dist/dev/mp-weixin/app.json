@@ -10,6 +10,7 @@
     "pages/user/user",
     "pages/user/userVideo",
     "pages/user/aboutUs",
+    "pages/user/wallet",
     "pages/user/notification",
     "pages/userProfile/userName",
     "pages/userProfile/userinfo",

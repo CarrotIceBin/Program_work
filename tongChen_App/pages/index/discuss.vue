@@ -83,8 +83,10 @@
 									<view class="comment-content">{{ item.remark }}</view>
 									<view class="comment-meta">
 										<view class="comment-time">{{ item.inputTime }}</view>
-										<!-- <view class="dot">·</view>
-										<view class="comment-reply" @click="restoreClick(item)">回复</view> -->
+										<view class="comment-location" v-if="getItemLocation(item)">{{ getItemLocation(item) }}</view>
+										<view class="comment-delete" v-if="isOwnComment(item)" @click="deleteComment(item)">
+											<uni-icons type="trash" size="14" color="#ff4d4f"></uni-icons>
+										</view>
 									</view>
 								</view>
 							</view>
@@ -138,6 +140,8 @@ export default {
 			userID: "",
 			popupTitle: "",
 			newsID: 0,
+			currentUserid: "",
+			userInfoCache: {},
 			userNewsInfo: {},
 			newsInfo: {},
 			commentsData: [],
@@ -158,6 +162,7 @@ export default {
 	onLoad(options) {
         const getInfo = uni.getWindowInfo()
         this.topHeight = getInfo.statusBarHeight ? Number(getInfo.statusBarHeight) + 60 : 60;
+		this.currentUserid = String(uni.getStorageSync('userid') || '');
 		
 		if(options.userID){
 			this.userID = options.userID
@@ -206,13 +211,90 @@ export default {
 				token: uni.getStorageSync('token') || ""
 			})).then(res=>{
 				if (res.code == 0) {
-					this.commentsData = res.pinlunList
+					this.commentsData = res.pinlunList;
+					// 为评论补充用户经纬度和地址
+					this.fillCommentLocation();
 				} else {
 					uni.showToast({ title: res.msg, icon: 'none'});
 				}
 			}).catch(err => {
 				console.log(err);
 			})
+		},
+		// 填充评论的地址信息
+		fillCommentLocation() {
+			const token = uni.getStorageSync('token') || '';
+			// 去重获取用户id
+			const userids = [...new Set(this.commentsData.map(i => i.userid).filter(Boolean))];
+			console.log('[评论定位] 需要获取地址的用户数=' + userids.length);
+			userids.forEach(userid => {
+				// 缓存中已有地址则直接填充
+				if (this.userInfoCache[userid] && this.userInfoCache[userid].address) {
+					this.applyAddressToComments(userid, this.userInfoCache[userid].address);
+					return;
+				}
+				// 调userInfoPublic获取经纬度
+				this.$http('userInfoPublic', JSON.stringify({
+					userid: userid,
+					token: token
+				})).then(res => {
+					if (res.code == 0 && res.userInfo && res.userInfo.lat && res.userInfo.lon) {
+						const u = res.userInfo;
+						console.log('[评论定位] userid=' + userid + ' 经纬度: lat=' + u.lat + ', lon=' + u.lon);
+						if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
+						this.userInfoCache[userid].lat = u.lat;
+						this.userInfoCache[userid].lon = u.lon;
+						// 高德逆地理
+						this.reverseGeoComment(userid, Number(u.lon), Number(u.lat));
+					} else {
+						console.log('[评论定位] userid=' + userid + ' 无经纬度数据');
+						// 没有经纬度时不显示地址
+						this.applyAddressToComments(userid, '');
+					}
+				}).catch(err => {
+					console.log('[评论定位] userid=' + userid + ' userInfoPublic失败:', err);
+				});
+			});
+		},
+		// 高德逆地理编码（评论专用）
+		reverseGeoComment(userid, lon, lat) {
+			const key = '93d81e19f28196780e2e7cb2120222ab';
+			const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${lon},${lat}&extensions=base`;
+			console.log('[评论定位] userid=' + userid + ' 调高德逆地理');
+			uni.request({
+				url: url,
+				method: 'GET',
+				success: (r) => {
+					console.log('[评论定位] 高德响应:', JSON.stringify(r.data).substring(0, 300));
+					if (r.data && r.data.status === '1' && r.data.regeocode) {
+						const comp = r.data.regeocode.addressComponent || {};
+						const province = comp.province || '';
+						const city = comp.city || '';
+						const district = comp.district || '';
+						const parts = [city, district].filter(Boolean);
+						const address = parts.join('-');
+						console.log('[评论定位] userid=' + userid + ' 逆地理结果: ' + address);
+						if (address) {
+							if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
+							this.userInfoCache[userid].address = address;
+							this.applyAddressToComments(userid, address);
+						}
+					} else {
+						console.log('[评论定位] userid=' + userid + ' 逆地理失败:', r.data ? r.data.info : '无数据');
+					}
+				},
+				fail: (err) => {
+					console.log('[评论定位] userid=' + userid + ' 逆地理请求失败:', err);
+				}
+			});
+		},
+		// 将地址写回该用户的所有评论
+		applyAddressToComments(userid, address) {
+			this.commentsData.forEach((item, idx) => {
+				if (String(item.userid) === String(userid)) {
+					this.$set(this.commentsData[idx], 'ipLocation', address);
+				}
+			});
 		},
 		newsPinLunAdd(){
 			this.$http("newsPinLunAdd", JSON.stringify({
@@ -305,6 +387,52 @@ export default {
 		// 分享到
 		handleShare(){
 			
+		},
+		// 判断是否为当前用户的评论
+		isOwnComment(item) {
+			if (!item || !item.userid) return false;
+			return String(item.userid) === this.currentUserid;
+		},
+		// 删除评论
+		deleteComment(item) {
+			uni.showModal({
+				title: '提示',
+				content: '确定删除这条评论吗？',
+				success: (res) => {
+					if (res.confirm) {
+						this.$http('newsPinLunDel', JSON.stringify({
+							plID: item.plID,
+							token: uni.getStorageSync('token') || ""
+						})).then(res => {
+							if (res.code == 0) {
+								uni.showToast({ title: '删除成功', icon: 'success' });
+								this.newsPinLunClient();
+							} else {
+								uni.showToast({ title: res.msg || '删除失败', icon: 'none' });
+							}
+						}).catch(err => {
+							console.log('删除评论失败:', err);
+							// 兜底：本地删除
+							const idx = this.commentsData.findIndex(i => i.plID === item.plID);
+							if (idx !== -1) {
+								this.commentsData.splice(idx, 1);
+								uni.showToast({ title: '已删除', icon: 'success' });
+							}
+						});
+					}
+				}
+			});
+		},
+		// 获取评论的位置显示
+		getItemLocation(item) {
+			if (!item) return '';
+			// 1. 优先显示省市区（逆地理结果）
+			if (item.ipLocation) return item.ipLocation;
+			// 2. 用经纬度兜底
+			if (item.lat && item.lon && String(item.lat) !== '0' && String(item.lon) !== '0') {
+				return '📍 ' + Number(item.lat).toFixed(4) + ', ' + Number(item.lon).toFixed(4);
+			}
+			return '';
 		}
 	}
 }
@@ -536,6 +664,26 @@ export default {
 	align-items: center;
 	font-size: 12px;
 	color: #999;
+	gap: 10px;
+}
+
+.comment-location {
+	color: #4A90E2;
+	font-size: 11px;
+}
+
+.comment-delete {
+	margin-left: auto;
+	padding: 2px 6px;
+	border-radius: 4px;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.comment-delete:hover {
+	background-color: #ffe8e8;
 }
 
 .comment-actions {

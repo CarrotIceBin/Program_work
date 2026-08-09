@@ -113,7 +113,8 @@
 						</view>
 						<view class="footer-item">
 							<text class="footer-icon">📍</text>
-							<text class="footer-text">{{ item.location || '未设置' }}</text>
+							<!-- <text class="footer-text">{{ item.location || '未设置' }}</text> -->
+							<text class="footer-text" v-if="getItemLatLon(item)" style="margin-left: 8rpx; color: #999;">{{ getItemLatLon(item) }}</text>
 						</view>
 						<view class="footer-item">
 							<text class="footer-icon">{{ getPublishTypeIcon(item.typeID) }}</text>
@@ -149,6 +150,10 @@
 						<view class="action-right">
 							<view class="action-item" @click="showPromoteTip">
 								<uni-icons type="more-filled" size="26" color="#666666" class="vertical-dots" />
+							</view>
+							<view class="action-item" v-if="isOwnPost(item)" @click="handleDeleteNews(item)">
+								<uni-icons type="trash" size="26" color="#ff4d4f" />
+								<view class="action-title" style="color:#ff4d4f">删除</view>
 							</view>
 						</view>
 					</view>
@@ -334,6 +339,8 @@ export default {
 			selectNewsId: '',
 			statusBarHeight: 20,
 			currentLocation: '定位中...',
+			userLat: null,
+			userLon: null,
 			publishTypeMap: {},
 			// 用户信息缓存，避免重复请求
 			userInfoCache: {},
@@ -489,54 +496,142 @@ export default {
 			});
 		},
 		getCurrentLocation() {
+			console.log('[IP定位] getCurrentLocation 开始执行');
 			const token = uni.getStorageSync('token') || '';
 			if (token) {
 				this.$http('userInfo', JSON.stringify({ token })).then(res => {
+					console.log('[IP定位] userInfo接口返回:', res.code, res.msg || '');
 					if (res.code == 0 && res.userInfo) {
-						const backendLocation = res.userInfo.location || res.userInfo.city || res.userInfo.district || '';
-						// 过滤掉通用词（Tab名称等），只保留真实位置
+						const u = res.userInfo;
+						console.log('[IP定位] userInfo数据: lat=' + u.lat + ', lon=' + u.lon + ', location=' + u.location);
+						// 直接存储经纬度
+						if (u.lat && u.lon) {
+							this.userLat = Number(u.lat);
+							this.userLon = Number(u.lon);
+							console.log('[IP定位] 存储经纬度: lat=' + this.userLat + ', lon=' + this.userLon);
+						}
+						// 设置当前位置
+						const backendLocation = u.location || '';
 						const invalidLocations = ['同城', '故乡', '关注', '单身', '定位中...'];
 						if (backendLocation && !invalidLocations.includes(backendLocation)) {
 							this.currentLocation = backendLocation;
-							return;
-						}
-					}
-					this.localGetLocation();
-				}).catch(() => {
-					this.localGetLocation();
-				});
-			} else {
-				this.localGetLocation();
-			}
-		},
-		localGetLocation() {
-			uni.getLocation({
-				type: 'gcj02',
-				success: (res) => {
-					const { latitude, longitude } = res;
-					uni.request({
-						url: 'https://restapi.amap.com/v3/geocode/regeo',
-						data: {
-							key: '7aa4914eb3c1cd78c7a70de253196e71',
-							location: `${longitude},${latitude}`
-						},
-						success: (r) => {
-							if (r.data && r.data.regeocode) {
-								const addr = r.data.regeocode.formattedAddress || '';
-								const district = r.data.regeocode.addressComponent?.district || '';
-								const city = r.data.regeocode.addressComponent?.city || '';
-								this.currentLocation = city || district || addr;
-							} else {
-								this.currentLocation = '同城';
-							}
-						},
-						fail: () => {
+						} else if (u.city) {
+							this.currentLocation = u.city;
+						} else {
 							this.currentLocation = '同城';
 						}
-					});
-				},
-				fail: () => {
+						console.log('[IP定位] currentLocation设置为:', this.currentLocation);
+						// 补全列表中每条动态的经纬度
+						this.fillMissingLatLon();
+					} else {
+						this.currentLocation = '同城';
+					}
+				}).catch(err => {
+					console.log('[IP定位] userInfo请求异常:', err);
 					this.currentLocation = '同城';
+				});
+			} else {
+				this.currentLocation = '同城';
+			}
+		},
+		// 获取动态项的地址显示：优先显示省市区，没有则显示经纬度
+		getItemLatLon(item) {
+			if (!item) return '';
+			// 1. 已有逆地理结果
+			if (item.ipLocation) {
+				return item.ipLocation;
+			}
+			// 2. 从缓存获取该用户的地址
+			if (item.userid && this.userInfoCache[item.userid] && this.userInfoCache[item.userid].address) {
+				return this.userInfoCache[item.userid].address;
+			}
+			// 3. 兜底显示经纬度数值
+			if (item.lat && item.lon && String(item.lat) !== '0' && String(item.lon) !== '0') {
+				return Number(item.lat).toFixed(4) + ', ' + Number(item.lon).toFixed(4);
+			}
+			if (item.userid && this.userInfoCache[item.userid]) {
+				const info = this.userInfoCache[item.userid];
+				if (info.lat && info.lon && String(info.lat) !== '0' && String(info.lon) !== '0') {
+					return Number(info.lat).toFixed(4) + ', ' + Number(info.lon).toFixed(4);
+				}
+			}
+			return '';
+		},
+		// 确保列表中每个用户的经纬度已从userInfoPublic获取，并逆地理编码为省市区
+		fillMissingLatLon() {
+			const list = this.tabData[this.tabIndex] || [];
+			const token = uni.getStorageSync('token') || '';
+			console.log('[IP定位] fillMissingLatLon: 列表总数=' + list.length);
+			// 去重：同一userid只请求一次
+			const userids = [...new Set(list.map(i => i.userid).filter(Boolean))];
+			console.log('[IP定位] 去重后需请求的用户数=' + userids.length);
+			userids.forEach(userid => {
+				// 缓存中已有地址则直接填充
+				if (this.userInfoCache[userid] && this.userInfoCache[userid].address) {
+					this.applyAddressToList(userid, this.userInfoCache[userid].address);
+					return;
+				}
+				// 调userInfoPublic获取经纬度
+				console.log('[IP定位] userid=' + userid + ' 调userInfoPublic获取经纬度');
+				this.$http('userInfoPublic', JSON.stringify({
+					userid: userid,
+					token: token
+				})).then(res => {
+					if (res.code == 0 && res.userInfo && res.userInfo.lat && res.userInfo.lon) {
+						const u = res.userInfo;
+						console.log('[IP定位] userid=' + userid + ' 经纬度: lat=' + u.lat + ', lon=' + u.lon);
+						// 存入缓存
+						if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
+						this.userInfoCache[userid].lat = u.lat;
+						this.userInfoCache[userid].lon = u.lon;
+						// 调高德逆地理编码获取省市区
+						this.reverseGeoToAddress(userid, Number(u.lon), Number(u.lat));
+					} else {
+						console.log('[IP定位] userid=' + userid + ' userInfoPublic无经纬度数据');
+					}
+				}).catch(err => {
+					console.log('[IP定位] userid=' + userid + ' userInfoPublic请求失败:', err);
+				});
+			});
+		},
+		// 高德逆地理编码：经纬度 -> 省市区
+		reverseGeoToAddress(userid, lon, lat) {
+			const key = '93d81e19f28196780e2e7cb2120222ab';
+			const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${lon},${lat}&extensions=base`;
+			console.log('[IP定位] userid=' + userid + ' 调高德逆地理: lon=' + lon + ', lat=' + lat);
+			uni.request({
+				url: url,
+				method: 'GET',
+				success: (r) => {
+					console.log('[IP定位] 高德逆地理响应:', JSON.stringify(r.data).substring(0, 400));
+					if (r.data && r.data.status === '1' && r.data.regeocode) {
+						const comp = r.data.regeocode.addressComponent || {};
+						const province = comp.province || '';
+						const city = comp.city || '';
+						const district = comp.district || '';
+						const parts = [city, district].filter(Boolean);
+						const address = parts.join('-');
+						console.log('[IP定位] userid=' + userid + ' 逆地理结果: ' + address);
+						if (address) {
+							if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
+							this.userInfoCache[userid].address = address;
+							this.applyAddressToList(userid, address);
+						}
+					} else {
+						console.log('[IP定位] userid=' + userid + ' 高德逆地理失败:', r.data ? r.data.info : '无数据');
+					}
+				},
+				fail: (err) => {
+					console.log('[IP定位] userid=' + userid + ' 高德逆地理请求失败:', err);
+				}
+			});
+		},
+		// 将地址写回列表中该用户的所有动态
+		applyAddressToList(userid, address) {
+			const list = this.tabData[this.tabIndex] || [];
+			list.forEach((item, idx) => {
+				if (String(item.userid) === String(userid)) {
+					this.$set(this.tabData[this.tabIndex][idx], 'ipLocation', address);
 				}
 			});
 		},
@@ -564,6 +659,35 @@ export default {
 			const m = String(d.getMonth() + 1).padStart(2, '0');
 			const day = String(d.getDate()).padStart(2, '0');
 			return `${y}-${m}-${day}`;
+		},
+		isOwnPost(item) {
+			const currentUserid = uni.getStorageSync('userid');
+			return item && currentUserid && String(item.userid) === String(currentUserid);
+		},
+		handleDeleteNews(item) {
+			if (!item || !item.newsID) return;
+			uni.showModal({
+				title: '删除确认',
+				content: '确定要删除这条动态吗？',
+				success: (res) => {
+					if (res.confirm) {
+						this.$http('newsUserDel', JSON.stringify({
+							newsID: item.newsID,
+							token: uni.getStorageSync('token') || ''
+						})).then(res => {
+							if (res.code == 0) {
+								uni.showToast({ title: '删除成功', icon: 'success' });
+								this.loadData(true);
+							} else {
+								uni.showToast({ title: res.msg || '删除失败', icon: 'none' });
+							}
+						}).catch(err => {
+							console.error('删除动态失败:', err);
+							uni.showToast({ title: '删除失败', icon: 'none' });
+						});
+					}
+				}
+			});
 		},
 		getPublishType(type) {
 			if (type === '' || type === null || type === undefined) return '';
@@ -709,6 +833,7 @@ export default {
 				});
 				if (res.code == 0) {
 					this.handleData(res.newsList, reset);
+					this.fillMissingLatLon();
 				} else {
 					uni.showToast({ title: res.msg, icon: 'none' });
 				}
@@ -853,7 +978,7 @@ export default {
 				});
 			});
 		},
-		// 从userInfoPublic获取用户性别和年龄
+		// 从userInfoPublic获取用户性别和年龄及经纬度
 		fetchFromPublic(userid, token) {
 			return new Promise((resolve) => {
 				console.log('fetchFromPublic: calling userInfoPublic for userid:', userid);
@@ -873,8 +998,11 @@ export default {
 						} else if (userInfo.birthday) {
 							info.age = this.calcAge(userInfo.birthday);
 						}
+						// 同时获取经纬度
+						if (userInfo.lat) info.lat = userInfo.lat;
+						if (userInfo.lon) info.lon = userInfo.lon;
 						console.log('userInfoPublic resolved with:', info);
-						if (info.sex || info.age) {
+						if (info.sex || info.age || info.lat) {
 							this.userInfoCache[userid] = info;
 							resolve(info);
 							return;

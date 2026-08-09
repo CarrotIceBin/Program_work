@@ -9,7 +9,7 @@
 					<view class="user-name">{{ userInfo.userName }}</view>
 					<view class="user-stats">
 						<view class="stat-btn" @click="meansClick">资料</view>
-						<view class="stat-btn">钱包</view>
+						<view class="stat-btn" @click="walletClick">钱包</view>
 					</view>
 				</view>
 			</view>
@@ -164,6 +164,10 @@ export default {
 		meansClick() {
 			if (!this.checkLogin()) return;
 			uni.navigateTo({ url: '/pages/userProfile/basics' });
+		},
+		walletClick() {
+			if (!this.checkLogin()) return;
+			uni.navigateTo({ url: '/pages/user/wallet' });
 		},
 		publishClick(){
 			if (!this.checkLogin()) return;

@@ -101,6 +101,12 @@
 		 	}
 		},
 		{
+		    "path": "pages/user/wallet",
+		    "style": {
+				"navigationBarTitleText": "我的钱包"
+			}
+		},
+		{
 		    "path" : "pages/user/notification",
 		    "style" : {
 				"navigationBarTitleText": "系统通知"

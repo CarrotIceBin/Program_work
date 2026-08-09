@@ -205,6 +205,23 @@
   align-items: center;
   font-size: 12px;
   color: #999;
+  gap: 10px;
+}
+.comment-location.data-v-7282da7a {
+  color: #4A90E2;
+  font-size: 11px;
+}
+.comment-delete.data-v-7282da7a {
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.comment-delete.data-v-7282da7a:hover {
+  background-color: #ffe8e8;
 }
 .comment-actions.data-v-7282da7a {
   display: flex;

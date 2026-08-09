@@ -58,6 +58,11 @@
       ></image>
     </view>
 
+    <!-- 购买跳转链接 -->
+    <view class="buy-link-row" @click="goPurchase">
+      <text class="buy-link-text">点击前往购买页面 →</text>
+    </view>
+
     <!-- 底部操作栏 -->
     <view class="bottom-bar">
       <view class="bar-item" @click="goHome">
@@ -68,8 +73,6 @@
         <view class="bar-icon">💬</view>
         <text class="bar-text">客服</text>
       </view>
-      <view class="btn-cart" @click="addToCart">加入购物车</view>
-      <view class="btn-buy" @click="buyNow">立即购买</view>
     </view>
 
     <!-- 选择规格弹窗 -->
@@ -149,6 +152,7 @@ export default {
           sales: '2000+',
           image: '/static/2026.jpg',
           images: ['/static/2026.jpg', '/static/2.jpg', '/static/3.jpg'],
+          purchaseUrl: 'https://www.douyin.com/jingxuan',
           specs: [
             { key: 'edition', label: '版本', values: ['超级巨星版', '普通版'] },
             { key: 'delivery', label: '发货方式', values: ['自动发货', '人工发货'] }
@@ -169,6 +173,7 @@ export default {
           sales: '500+',
           image: '/static/1.jpg',
           images: ['/static/1.jpg', '/static/2026.jpg', '/static/3.jpg'],
+          purchaseUrl: 'https://www.douyin.com/jingxuan',
           specs: [
             { key: 'capacity', label: '容量', values: ['256GB', '512GB', '1TB'] },
             { key: 'color', label: '颜色', values: ['原色钛金属', '深空黑色', '白色'] }
@@ -189,6 +194,7 @@ export default {
           sales: '800+',
           image: '/static/2.jpg',
           images: ['/static/2.jpg', '/static/2026.jpg', '/static/1.jpg'],
+          purchaseUrl: 'https://www.douyin.com/jingxuan',
           specs: [
             { key: 'gift', label: '赠品', values: ['含赠品', '无赠品'] }
           ],
@@ -207,6 +213,7 @@ export default {
           sales: '1000+',
           image: '/static/3.jpg',
           images: ['/static/3.jpg', '/static/2026.jpg', '/static/1.jpg'],
+          purchaseUrl: 'https://www.douyin.com/jingxuan',
           specs: [
             { key: 'package', label: '礼包类型', values: ['星魂大礼包', '单一皮肤'] }
           ],
@@ -332,7 +339,8 @@ export default {
             image: d.image || this.product.image,
             images: d.images || (d.image ? [d.image] : this.images),
             specs: d.specs || [],
-            details: d.details || []
+            details: d.details || [],
+            purchaseUrl: d.purchaseUrl || d.buyUrl || d.externalUrl || this.product.purchaseUrl || ''
           }
           this.images = this.product.images
           // 初始化规格
@@ -396,6 +404,20 @@ export default {
     },
     buyNow() {
       this.showSpecPopup = true
+    },
+    goPurchase() {
+      const url = this.product.purchaseUrl || 'https://www.douyin.com/jingxuan';
+      // #ifdef H5
+      window.open(url, '_blank')
+      // #endif
+      // #ifndef H5
+      uni.setClipboardData({
+        data: url,
+        success: () => {
+          uni.showToast({ title: '购买链接已复制', icon: 'none' })
+        }
+      })
+      // #endif
     },
     confirmSpec() {
       this.showSpecPopup = false
@@ -624,6 +646,21 @@ export default {
 
 .btn-buy {
   background: linear-gradient(135deg, #fd7031, #ff5722);
+}
+
+.buy-link-row {
+  margin: 24rpx 32rpx;
+  padding: 24rpx 32rpx;
+  background: #fff7ed;
+  border: 1rpx solid #ffcc80;
+  border-radius: 12rpx;
+  text-align: center;
+}
+
+.buy-link-text {
+  font-size: 28rpx;
+  color: #ff6f00;
+  font-weight: 500;
 }
 
 // 规格选择弹窗

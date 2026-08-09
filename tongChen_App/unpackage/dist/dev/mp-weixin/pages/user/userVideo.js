@@ -102,7 +102,7 @@ var components
 try {
   components = {
     yVideoSlide: function () {
-      return __webpack_require__.e(/*! import() | components/y-video-slide/y-video-slide */ "components/y-video-slide/y-video-slide").then(__webpack_require__.bind(null, /*! @/components/y-video-slide/y-video-slide.vue */ 419))
+      return __webpack_require__.e(/*! import() | components/y-video-slide/y-video-slide */ "components/y-video-slide/y-video-slide").then(__webpack_require__.bind(null, /*! @/components/y-video-slide/y-video-slide.vue */ 427))
     },
   }
 } catch (e) {
@@ -171,7 +171,7 @@ function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (O
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 var YVideoSlide = function YVideoSlide() {
   __webpack_require__.e(/*! require.ensure | components/y-video-slide/y-video-slide */ "components/y-video-slide/y-video-slide").then((function () {
-    return resolve(__webpack_require__(/*! @/components/y-video-slide/y-video-slide.vue */ 419));
+    return resolve(__webpack_require__(/*! @/components/y-video-slide/y-video-slide.vue */ 427));
   }).bind(null, __webpack_require__)).catch(__webpack_require__.oe);
 };
 var _default = {

@@ -102,13 +102,13 @@ var components
 try {
   components = {
     uniIcons: function () {
-      return Promise.all(/*! import() | uni_modules/uni-icons/components/uni-icons/uni-icons */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-icons/components/uni-icons/uni-icons")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-icons/components/uni-icons/uni-icons.vue */ 386))
+      return Promise.all(/*! import() | uni_modules/uni-icons/components/uni-icons/uni-icons */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-icons/components/uni-icons/uni-icons")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-icons/components/uni-icons/uni-icons.vue */ 394))
     },
     uniLoadMore: function () {
-      return Promise.all(/*! import() | uni_modules/uni-load-more/components/uni-load-more/uni-load-more */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-load-more/components/uni-load-more/uni-load-more")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-load-more/components/uni-load-more/uni-load-more.vue */ 394))
+      return Promise.all(/*! import() | uni_modules/uni-load-more/components/uni-load-more/uni-load-more */[__webpack_require__.e("common/vendor"), __webpack_require__.e("uni_modules/uni-load-more/components/uni-load-more/uni-load-more")]).then(__webpack_require__.bind(null, /*! @/uni_modules/uni-load-more/components/uni-load-more/uni-load-more.vue */ 402))
     },
     uniPopup: function () {
-      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 405))
+      return __webpack_require__.e(/*! import() | uni_modules/uni-popup/components/uni-popup/uni-popup */ "uni_modules/uni-popup/components/uni-popup/uni-popup").then(__webpack_require__.bind(null, /*! @/uni_modules/uni-popup/components/uni-popup/uni-popup.vue */ 413))
     },
   }
 } catch (e) {
@@ -139,8 +139,11 @@ var render = function () {
         var m1 = _vm.getUserLevel(item)
         var g0 = item.iconUrls && item.iconUrls.length
         var m2 = _vm.formatTime(item.inputTime)
-        var m3 = _vm.getPublishTypeIcon(item.typeID)
-        var m4 = item.typeName || _vm.getPublishType(item.typeID) || "未设置"
+        var m3 = _vm.getItemLatLon(item)
+        var m4 = m3 ? _vm.getItemLatLon(item) : null
+        var m5 = _vm.getPublishTypeIcon(item.typeID)
+        var m6 = item.typeName || _vm.getPublishType(item.typeID) || "未设置"
+        var m7 = _vm.isOwnPost(item)
         return {
           $orig: $orig,
           m0: m0,
@@ -149,6 +152,9 @@ var render = function () {
           m2: m2,
           m3: m3,
           m4: m4,
+          m5: m5,
+          m6: m6,
+          m7: m7,
         }
       })
     : null
@@ -250,12 +256,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 var _regenerator = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/regenerator */ 38));
-var _toConsumableArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ 18));
 var _typeof2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/typeof */ 13));
+var _toConsumableArray2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/toConsumableArray */ 18));
 var _asyncToGenerator2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/asyncToGenerator */ 56));
 var _defineProperty2 = _interopRequireDefault(__webpack_require__(/*! @babel/runtime/helpers/defineProperty */ 11));
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
+//
+//
+//
+//
+//
 //
 //
 //
@@ -587,6 +598,8 @@ var _default = {
       selectNewsId: '',
       statusBarHeight: 20,
       currentLocation: '定位中...',
+      userLat: null,
+      userLon: null,
       publishTypeMap: {},
       // 用户信息缓存，避免重复请求
       userInfoCache: {},
@@ -810,65 +823,155 @@ var _default = {
     },
     getCurrentLocation: function getCurrentLocation() {
       var _this3 = this;
+      console.log('[IP定位] getCurrentLocation 开始执行');
       var token = uni.getStorageSync('token') || '';
       if (token) {
         this.$http('userInfo', JSON.stringify({
           token: token
         })).then(function (res) {
+          console.log('[IP定位] userInfo接口返回:', res.code, res.msg || '');
           if (res.code == 0 && res.userInfo) {
-            var backendLocation = res.userInfo.location || res.userInfo.city || res.userInfo.district || '';
-            // 过滤掉通用词（Tab名称等），只保留真实位置
+            var u = res.userInfo;
+            console.log('[IP定位] userInfo数据: lat=' + u.lat + ', lon=' + u.lon + ', location=' + u.location);
+            // 直接存储经纬度
+            if (u.lat && u.lon) {
+              _this3.userLat = Number(u.lat);
+              _this3.userLon = Number(u.lon);
+              console.log('[IP定位] 存储经纬度: lat=' + _this3.userLat + ', lon=' + _this3.userLon);
+            }
+            // 设置当前位置
+            var backendLocation = u.location || '';
             var invalidLocations = ['同城', '故乡', '关注', '单身', '定位中...'];
             if (backendLocation && !invalidLocations.includes(backendLocation)) {
               _this3.currentLocation = backendLocation;
-              return;
+            } else if (u.city) {
+              _this3.currentLocation = u.city;
+            } else {
+              _this3.currentLocation = '同城';
             }
+            console.log('[IP定位] currentLocation设置为:', _this3.currentLocation);
+            // 补全列表中每条动态的经纬度
+            _this3.fillMissingLatLon();
+          } else {
+            _this3.currentLocation = '同城';
           }
-          _this3.localGetLocation();
-        }).catch(function () {
-          _this3.localGetLocation();
+        }).catch(function (err) {
+          console.log('[IP定位] userInfo请求异常:', err);
+          _this3.currentLocation = '同城';
         });
       } else {
-        this.localGetLocation();
+        this.currentLocation = '同城';
       }
     },
-    localGetLocation: function localGetLocation() {
+    // 获取动态项的地址显示：优先显示省市区，没有则显示经纬度
+    getItemLatLon: function getItemLatLon(item) {
+      if (!item) return '';
+      // 1. 已有逆地理结果
+      if (item.ipLocation) {
+        return item.ipLocation;
+      }
+      // 2. 从缓存获取该用户的地址
+      if (item.userid && this.userInfoCache[item.userid] && this.userInfoCache[item.userid].address) {
+        return this.userInfoCache[item.userid].address;
+      }
+      // 3. 兜底显示经纬度数值
+      if (item.lat && item.lon && String(item.lat) !== '0' && String(item.lon) !== '0') {
+        return Number(item.lat).toFixed(4) + ', ' + Number(item.lon).toFixed(4);
+      }
+      if (item.userid && this.userInfoCache[item.userid]) {
+        var info = this.userInfoCache[item.userid];
+        if (info.lat && info.lon && String(info.lat) !== '0' && String(info.lon) !== '0') {
+          return Number(info.lat).toFixed(4) + ', ' + Number(info.lon).toFixed(4);
+        }
+      }
+      return '';
+    },
+    // 确保列表中每个用户的经纬度已从userInfoPublic获取，并逆地理编码为省市区
+    fillMissingLatLon: function fillMissingLatLon() {
       var _this4 = this;
-      uni.getLocation({
-        type: 'gcj02',
-        success: function success(res) {
-          var latitude = res.latitude,
-            longitude = res.longitude;
-          uni.request({
-            url: 'https://restapi.amap.com/v3/geocode/regeo',
-            data: {
-              key: '7aa4914eb3c1cd78c7a70de253196e71',
-              location: "".concat(longitude, ",").concat(latitude)
-            },
-            success: function success(r) {
-              if (r.data && r.data.regeocode) {
-                var _r$data$regeocode$add, _r$data$regeocode$add2;
-                var addr = r.data.regeocode.formattedAddress || '';
-                var district = ((_r$data$regeocode$add = r.data.regeocode.addressComponent) === null || _r$data$regeocode$add === void 0 ? void 0 : _r$data$regeocode$add.district) || '';
-                var city = ((_r$data$regeocode$add2 = r.data.regeocode.addressComponent) === null || _r$data$regeocode$add2 === void 0 ? void 0 : _r$data$regeocode$add2.city) || '';
-                _this4.currentLocation = city || district || addr;
-              } else {
-                _this4.currentLocation = '同城';
-              }
-            },
-            fail: function fail() {
-              _this4.currentLocation = '同城';
+      var list = this.tabData[this.tabIndex] || [];
+      var token = uni.getStorageSync('token') || '';
+      console.log('[IP定位] fillMissingLatLon: 列表总数=' + list.length);
+      // 去重：同一userid只请求一次
+      var userids = (0, _toConsumableArray2.default)(new Set(list.map(function (i) {
+        return i.userid;
+      }).filter(Boolean)));
+      console.log('[IP定位] 去重后需请求的用户数=' + userids.length);
+      userids.forEach(function (userid) {
+        // 缓存中已有地址则直接填充
+        if (_this4.userInfoCache[userid] && _this4.userInfoCache[userid].address) {
+          _this4.applyAddressToList(userid, _this4.userInfoCache[userid].address);
+          return;
+        }
+        // 调userInfoPublic获取经纬度
+        console.log('[IP定位] userid=' + userid + ' 调userInfoPublic获取经纬度');
+        _this4.$http('userInfoPublic', JSON.stringify({
+          userid: userid,
+          token: token
+        })).then(function (res) {
+          if (res.code == 0 && res.userInfo && res.userInfo.lat && res.userInfo.lon) {
+            var u = res.userInfo;
+            console.log('[IP定位] userid=' + userid + ' 经纬度: lat=' + u.lat + ', lon=' + u.lon);
+            // 存入缓存
+            if (!_this4.userInfoCache[userid]) _this4.userInfoCache[userid] = {};
+            _this4.userInfoCache[userid].lat = u.lat;
+            _this4.userInfoCache[userid].lon = u.lon;
+            // 调高德逆地理编码获取省市区
+            _this4.reverseGeoToAddress(userid, Number(u.lon), Number(u.lat));
+          } else {
+            console.log('[IP定位] userid=' + userid + ' userInfoPublic无经纬度数据');
+          }
+        }).catch(function (err) {
+          console.log('[IP定位] userid=' + userid + ' userInfoPublic请求失败:', err);
+        });
+      });
+    },
+    // 高德逆地理编码：经纬度 -> 省市区
+    reverseGeoToAddress: function reverseGeoToAddress(userid, lon, lat) {
+      var _this5 = this;
+      var key = '93d81e19f28196780e2e7cb2120222ab';
+      var url = "https://restapi.amap.com/v3/geocode/regeo?key=".concat(key, "&location=").concat(lon, ",").concat(lat, "&extensions=base");
+      console.log('[IP定位] userid=' + userid + ' 调高德逆地理: lon=' + lon + ', lat=' + lat);
+      uni.request({
+        url: url,
+        method: 'GET',
+        success: function success(r) {
+          console.log('[IP定位] 高德逆地理响应:', JSON.stringify(r.data).substring(0, 400));
+          if (r.data && r.data.status === '1' && r.data.regeocode) {
+            var comp = r.data.regeocode.addressComponent || {};
+            var province = comp.province || '';
+            var city = comp.city || '';
+            var district = comp.district || '';
+            var parts = [city, district].filter(Boolean);
+            var address = parts.join('-');
+            console.log('[IP定位] userid=' + userid + ' 逆地理结果: ' + address);
+            if (address) {
+              if (!_this5.userInfoCache[userid]) _this5.userInfoCache[userid] = {};
+              _this5.userInfoCache[userid].address = address;
+              _this5.applyAddressToList(userid, address);
             }
-          });
+          } else {
+            console.log('[IP定位] userid=' + userid + ' 高德逆地理失败:', r.data ? r.data.info : '无数据');
+          }
         },
-        fail: function fail() {
-          _this4.currentLocation = '同城';
+        fail: function fail(err) {
+          console.log('[IP定位] userid=' + userid + ' 高德逆地理请求失败:', err);
+        }
+      });
+    },
+    // 将地址写回列表中该用户的所有动态
+    applyAddressToList: function applyAddressToList(userid, address) {
+      var _this6 = this;
+      var list = this.tabData[this.tabIndex] || [];
+      list.forEach(function (item, idx) {
+        if (String(item.userid) === String(userid)) {
+          _this6.$set(_this6.tabData[_this6.tabIndex][idx], 'ipLocation', address);
         }
       });
     },
     // 从后端加载拍摄方式类型映射
     loadPublishTypeMap: function loadPublishTypeMap() {
-      var _this5 = this;
+      var _this7 = this;
       this.$http('selectItemListExt', JSON.stringify({
         tag: 'source_type',
         token: uni.getStorageSync('token') || ''
@@ -878,7 +981,7 @@ var _default = {
           res.itemList.forEach(function (item) {
             map[item.selectValue] = item.selectTxt;
           });
-          _this5.publishTypeMap = map;
+          _this7.publishTypeMap = map;
         }
       }).catch(function (err) {
         console.log('获取类型映射失败，使用默认映射', err);
@@ -891,6 +994,45 @@ var _default = {
       var m = String(d.getMonth() + 1).padStart(2, '0');
       var day = String(d.getDate()).padStart(2, '0');
       return "".concat(y, "-").concat(m, "-").concat(day);
+    },
+    isOwnPost: function isOwnPost(item) {
+      var currentUserid = uni.getStorageSync('userid');
+      return item && currentUserid && String(item.userid) === String(currentUserid);
+    },
+    handleDeleteNews: function handleDeleteNews(item) {
+      var _this8 = this;
+      if (!item || !item.newsID) return;
+      uni.showModal({
+        title: '删除确认',
+        content: '确定要删除这条动态吗？',
+        success: function success(res) {
+          if (res.confirm) {
+            _this8.$http('newsUserDel', JSON.stringify({
+              newsID: item.newsID,
+              token: uni.getStorageSync('token') || ''
+            })).then(function (res) {
+              if (res.code == 0) {
+                uni.showToast({
+                  title: '删除成功',
+                  icon: 'success'
+                });
+                _this8.loadData(true);
+              } else {
+                uni.showToast({
+                  title: res.msg || '删除失败',
+                  icon: 'none'
+                });
+              }
+            }).catch(function (err) {
+              console.error('删除动态失败:', err);
+              uni.showToast({
+                title: '删除失败',
+                icon: 'none'
+              });
+            });
+          }
+        }
+      });
     },
     getPublishType: function getPublishType(type) {
       if (type === '' || type === null || type === undefined) return '';
@@ -993,7 +1135,7 @@ var _default = {
       this.promoteCount = 0;
     },
     submitPromote: function submitPromote() {
-      var _this6 = this;
+      var _this9 = this;
       if (!this.promoteTarget) {
         return uni.showToast({
           title: '请选择推广用户',
@@ -1010,12 +1152,12 @@ var _default = {
         title: "\u63D0\u4EA4\u6210\u529F \uFFE5".concat(this.promotePrice)
       });
       setTimeout(function () {
-        _this6.$refs.promotePopup.close();
+        _this9.$refs.promotePopup.close();
       }, 1200);
     },
     // 更新经纬度
     lonLatUpdate: function lonLatUpdate() {
-      var _this7 = this;
+      var _this10 = this;
       uni.getLocation({
         type: 'wgs84',
         success: function () {
@@ -1025,7 +1167,7 @@ var _default = {
                 switch (_context2.prev = _context2.next) {
                   case 0:
                     _context2.next = 2;
-                    return _this7.$http('userLonLatUpdate', {
+                    return _this10.$http('userLonLatUpdate', {
                       lon: res.longitude,
                       lat: res.latitude,
                       token: uni.getStorageSync('token') || ''
@@ -1050,7 +1192,7 @@ var _default = {
     // 加载列表数据
     loadData: function loadData() {
       var _arguments = arguments,
-        _this8 = this;
+        _this11 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee3() {
         var reset, res;
         return _regenerator.default.wrap(function _callee3$(_context3) {
@@ -1058,26 +1200,27 @@ var _default = {
             switch (_context3.prev = _context3.next) {
               case 0:
                 reset = _arguments.length > 0 && _arguments[0] !== undefined ? _arguments[0] : true;
-                if (!_this8.loading) {
+                if (!_this11.loading) {
                   _context3.next = 3;
                   break;
                 }
                 return _context3.abrupt("return");
               case 3:
-                _this8.loading = true;
-                if (reset) _this8.page = 0;
+                _this11.loading = true;
+                if (reset) _this11.page = 0;
                 _context3.prev = 5;
                 _context3.next = 8;
-                return _this8.$http('newsUserListClient', {
+                return _this11.$http('newsUserListClient', {
                   newsTitle: '',
-                  newsFlid: _this8.currentNewsFlid,
-                  pg: _this8.page,
+                  newsFlid: _this11.currentNewsFlid,
+                  pg: _this11.page,
                   token: uni.getStorageSync('token') || ''
                 });
               case 8:
                 res = _context3.sent;
                 if (res.code == 0) {
-                  _this8.handleData(res.newsList, reset);
+                  _this11.handleData(res.newsList, reset);
+                  _this11.fillMissingLatLon();
                 } else {
                   uni.showToast({
                     title: res.msg,
@@ -1092,7 +1235,7 @@ var _default = {
                 console.error('列表加载异常', _context3.t0);
               case 15:
                 _context3.prev = 15;
-                _this8.loading = false;
+                _this11.loading = false;
                 return _context3.finish(15);
               case 18:
               case "end":
@@ -1121,7 +1264,7 @@ var _default = {
     },
     // 补全列表中缺失的性别和年龄信息（从basics基本资料获取）
     fixMissingUserInfo: function fixMissingUserInfo() {
-      var _this9 = this;
+      var _this12 = this;
       var list = this.tabData[this.tabIndex] || [];
       console.log("fixMissingUserInfo: total=".concat(list.length, ", items with missing data:"));
       list.forEach(function (item, i) {
@@ -1137,8 +1280,8 @@ var _default = {
       var updatedCount = 0;
       missingUsers.forEach(function (item) {
         // 先检查缓存
-        if (_this9.userInfoCache[item.userid]) {
-          var info = _this9.userInfoCache[item.userid];
+        if (_this12.userInfoCache[item.userid]) {
+          var info = _this12.userInfoCache[item.userid];
           var idx = list.findIndex(function (i) {
             return i.userid === item.userid;
           });
@@ -1146,15 +1289,15 @@ var _default = {
             var newItem = _objectSpread({}, list[idx]);
             if (info.sex) newItem.userSex = info.sex;
             if (info.age) newItem.userOld = info.age;
-            _this9.$set(_this9.tabData[_this9.tabIndex], idx, newItem);
+            _this12.$set(_this12.tabData[_this12.tabIndex], idx, newItem);
             updatedCount++;
           }
           return;
         }
-        _this9.fetchUserInfo(item.userid).then(function (info) {
+        _this12.fetchUserInfo(item.userid).then(function (info) {
           if (info) {
-            _this9.userInfoCache[item.userid] = info;
-            var currentList = _this9.tabData[_this9.tabIndex] || [];
+            _this12.userInfoCache[item.userid] = info;
+            var currentList = _this12.tabData[_this12.tabIndex] || [];
             var _idx = currentList.findIndex(function (i) {
               return i.userid === item.userid;
             });
@@ -1162,7 +1305,7 @@ var _default = {
               var _newItem = _objectSpread({}, currentList[_idx]);
               if (info.sex) _newItem.userSex = info.sex;
               if (info.age) _newItem.userOld = info.age;
-              _this9.$set(_this9.tabData[_this9.tabIndex], _idx, _newItem);
+              _this12.$set(_this12.tabData[_this12.tabIndex], _idx, _newItem);
               console.log('Updated:', item.userid, 'sex:', _newItem.userSex, 'age:', _newItem.userOld);
             }
           }
@@ -1173,15 +1316,15 @@ var _default = {
     },
     // 获取单个用户的性别和年龄（优先从basics基本资料获取）
     fetchUserInfo: function fetchUserInfo(userid) {
-      var _this10 = this;
+      var _this13 = this;
       return new Promise(function (resolve) {
-        if (_this10.userInfoCache[userid]) {
+        if (_this13.userInfoCache[userid]) {
           // 如果缓存的性别/年龄与当前用户一致，说明缓存的是错误数据（userInfoListMy 返回的），清除缓存
-          var cached = _this10.userInfoCache[userid];
+          var cached = _this13.userInfoCache[userid];
           var _currentUserid = uni.getStorageSync('userid');
           var isOtherUser = String(userid) !== String(_currentUserid);
           if (isOtherUser && cached.fromUserInfoListMy) {
-            delete _this10.userInfoCache[userid];
+            delete _this13.userInfoCache[userid];
             console.log('fetchUserInfo: cleared wrong cache for', userid);
           } else {
             resolve(cached);
@@ -1197,12 +1340,12 @@ var _default = {
         // 查看他人时直接用 userInfoPublic
         if (targetUserid !== currentUserid) {
           console.log('fetchUserInfo: 他人数据，直接用 userInfoPublic, userid:', userid);
-          _this10.fetchFromPublic(userid, token).then(resolve);
+          _this13.fetchFromPublic(userid, token).then(resolve);
           return;
         }
         console.log('fetchUserInfo: 自己数据，调用 userInfoListMy, userid:', userid);
         // 优先从basics基本资料获取
-        _this10.$http('userInfoListMy', JSON.stringify({
+        _this13.$http('userInfoListMy', JSON.stringify({
           groupInfo: 1,
           groupModule: 1,
           token: token,
@@ -1222,32 +1365,32 @@ var _default = {
               info.sex = sexItem.infoTxt;
             }
             if (birthdayItem) {
-              info.age = _this10.calcAge(birthdayItem.infoTxt);
+              info.age = _this13.calcAge(birthdayItem.infoTxt);
             }
             if (info.sex || info.age) {
               console.log('userInfoListMy resolved with:', info);
               info.fromUserInfoListMy = true;
-              _this10.userInfoCache[userid] = info;
+              _this13.userInfoCache[userid] = info;
               resolve(info);
               return;
             }
           }
           // basics没数据时，尝试用userInfoPublic获取
           console.log('userInfoListMy no data, trying userInfoPublic...');
-          _this10.fetchFromPublic(userid, token).then(resolve);
+          _this13.fetchFromPublic(userid, token).then(resolve);
         }).catch(function (err) {
           console.log('userInfoListMy error:', err);
           // basics接口失败时，尝试用userInfoPublic获取
-          _this10.fetchFromPublic(userid, token).then(resolve);
+          _this13.fetchFromPublic(userid, token).then(resolve);
         });
       });
     },
-    // 从userInfoPublic获取用户性别和年龄
+    // 从userInfoPublic获取用户性别和年龄及经纬度
     fetchFromPublic: function fetchFromPublic(userid, token) {
-      var _this11 = this;
+      var _this14 = this;
       return new Promise(function (resolve) {
         console.log('fetchFromPublic: calling userInfoPublic for userid:', userid);
-        _this11.$http('userInfoPublic', JSON.stringify({
+        _this14.$http('userInfoPublic', JSON.stringify({
           userid: userid,
           token: token
         })).then(function (res) {
@@ -1261,11 +1404,14 @@ var _default = {
             if (userInfo.userOld) {
               info.age = String(userInfo.userOld);
             } else if (userInfo.birthday) {
-              info.age = _this11.calcAge(userInfo.birthday);
+              info.age = _this14.calcAge(userInfo.birthday);
             }
+            // 同时获取经纬度
+            if (userInfo.lat) info.lat = userInfo.lat;
+            if (userInfo.lon) info.lon = userInfo.lon;
             console.log('userInfoPublic resolved with:', info);
-            if (info.sex || info.age) {
-              _this11.userInfoCache[userid] = info;
+            if (info.sex || info.age || info.lat) {
+              _this14.userInfoCache[userid] = info;
               resolve(info);
               return;
             }
@@ -1340,14 +1486,14 @@ var _default = {
     },
     // 点赞逻辑
     handleDianzan: function handleDianzan(newsID) {
-      var _this12 = this;
+      var _this15 = this;
       return (0, _asyncToGenerator2.default)( /*#__PURE__*/_regenerator.default.mark(function _callee4() {
         var res, idx, item;
         return _regenerator.default.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                if (_this12.checkLogin()) {
+                if (_this15.checkLogin()) {
                   _context4.next = 2;
                   break;
                 }
@@ -1355,28 +1501,28 @@ var _default = {
               case 2:
                 _context4.prev = 2;
                 _context4.next = 5;
-                return _this12.$http('newsUserDianZan', {
+                return _this15.$http('newsUserDianZan', {
                   newsID: newsID,
                   token: uni.getStorageSync('token') || ''
                 });
               case 5:
                 res = _context4.sent;
                 if (res.code == 0) {
-                  idx = _this12.currentTabData.findIndex(function (item) {
+                  idx = _this15.currentTabData.findIndex(function (item) {
                     return item.newsID === newsID;
                   });
                   if (idx > -1) {
-                    item = _this12.currentTabData[idx];
+                    item = _this15.currentTabData[idx];
                     item.isDianZan = item.isDianZan === 1 ? 0 : 1;
                     item.numDianZan = item.isDianZan ? Number(item.numDianZan) + 1 : Math.max(0, Number(item.numDianZan) - 1);
                     // 响应式更新视图
-                    _this12.$set(_this12.tabData[_this12.tabIndex], idx, _objectSpread({}, item));
+                    _this15.$set(_this15.tabData[_this15.tabIndex], idx, _objectSpread({}, item));
                   }
                   uni.showToast({
                     title: res.msg,
                     icon: 'none'
                   });
-                  console.log(_this12.currentTabData);
+                  console.log(_this15.currentTabData);
                 } else {
                   uni.showToast({
                     title: res.msg,
