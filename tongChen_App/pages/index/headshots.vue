@@ -234,8 +234,7 @@
 
 		<!-- 底部栏 -->
 		<view class="bottom">
-			<!-- <view class="btn-hello" @tap="greet"><text>打招呼</text></view> -->
-			<view class="btn-follow" @tap="toggleFollow">
+			<view v-if="!isSelf" class="btn-follow" @tap="toggleFollow">
 				<text>{{ isFollowed ? '已关注' : '+ 关注' }}</text>
 			</view>
 		</view>
@@ -781,6 +780,10 @@ export default {
 			uni.showToast({ title: '打招呼成功', icon: 'none' });
 		},
 		toggleFollow() {
+			if (this.isSelf) {
+				uni.showToast({ title: '不能关注自己', icon: 'none' });
+				return;
+			}
 			this.isFollowed = !this.isFollowed;
 			this.userFansOpt();
 		},
