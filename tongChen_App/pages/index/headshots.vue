@@ -822,6 +822,8 @@ export default {
 			});
 		},
 		handleDiscuss(post) {
+			// 点击评论时计入浏览
+			this.handleViewCount(post);
 			uni.navigateTo({
 				url: `/pages/index/discuss?newsID=${post.newsID}&userID=${post.userid}`
 			});

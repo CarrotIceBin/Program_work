@@ -68,7 +68,6 @@
 				:key="index"
 				class="dynamic-item"
 				:id="'news-' + item.newsID"
-				@click.capture="handleViewCount(item)"
 			>
 				<view class="user-info">
 					<view class="avatar" @click="userUrlClick(item.userid)">
@@ -1101,13 +1100,15 @@ export default {
 			}
 		},
 
-		// 跳转评论页
+		// 跳转评论页（同时计入浏览）
 		handleDiscuss(item) {
-			if (this.checkLogin()) {
-				uni.navigateTo({
-					url: `/pages/index/discuss?newsID=${item.newsID}&userID=${item.userid}`
-				});
-			}
+			if (!this.checkLogin()) return;
+			// 点击评论时计入浏览
+			this.handleViewCount(item);
+			// 跳转评论页
+			uni.navigateTo({
+				url: `/pages/index/discuss?newsID=${item.newsID}&userID=${item.userid}`
+			});
 		},
 
 		// 预览图片

@@ -260,12 +260,12 @@ export default {
 		reverseGeoComment(userid, lon, lat) {
 			const key = '93d81e19f28196780e2e7cb2120222ab';
 			const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${lon},${lat}&extensions=base`;
-			console.log('[评论定位] userid=' + userid + ' 调高德逆地理');
+			
 			uni.request({
 				url: url,
 				method: 'GET',
 				success: (r) => {
-					console.log('[评论定位] 高德响应:', JSON.stringify(r.data).substring(0, 300));
+		
 					if (r.data && r.data.status === '1' && r.data.regeocode) {
 						const comp = r.data.regeocode.addressComponent || {};
 						const province = comp.province || '';
@@ -391,7 +391,9 @@ export default {
 		// 判断是否为当前用户的评论
 		isOwnComment(item) {
 			if (!item || !item.userid) return false;
-			return String(item.userid) === this.currentUserid;
+			const isOwn = String(item.userid) === this.currentUserid;
+			console.log('[isOwnComment] item.userid:', item.userid, 'currentUserid:', this.currentUserid, 'isOwn:', isOwn);
+			return isOwn;
 		},
 		// 删除评论
 		deleteComment(item) {
