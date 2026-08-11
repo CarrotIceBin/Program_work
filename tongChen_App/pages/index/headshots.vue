@@ -48,11 +48,9 @@
 					</view>
 				</view>
 				<view class="info-meta">
-					<text v-if="userInfo.gongZuoDi">{{ userInfo.gongZuoDi }}</text>
-					<text v-if="userInfo.gongZuoDi">·</text>
-					<text>{{ lastActive }}</text>
-					<text>·</text>
-					<text>{{ likeCount }}获赞</text>
+					<view v-if="userInfo.gongZuoDi" class="meta-pill meta-loc">📍 {{ userInfo.gongZuoDi }}</view>
+					<view class="meta-pill meta-like">❤ {{ likeCount }}获赞</view>
+					<view v-if="daysOnPlatform" class="meta-pill meta-days">🎯 来同城{{ daysOnPlatform }}天</view>
 				</view>
 			</view>
 
@@ -214,13 +212,13 @@
 								<uni-icons type="eye" size="22" />
 								<text class="action-title">{{ post.viewNum || 0 }}次浏览</text>
 							</view>
-							<!-- <view class="action-item" @click="handleAccost(userInfo.userid)">
-								<uni-icons type="chat" size="22" />
-								<text class="action-title">上热点</text>
-							</view> -->
 							<view class="action-item" @click="showSharePopup('转到', 'switched')">
 								<uni-icons type="redo" size="22" />
 								<text class="action-title">转到</text>
+							</view>
+							<view v-if="isOwnPost(post)" class="action-item" @click="handleDeleteNews(post)">
+								<uni-icons type="trash" size="22" color="#ff4d4f" />
+								<text class="action-title" style="color:#ff4d4f">删除</text>
 							</view>
 						</view>
 						<view class="more-btn">
@@ -268,13 +266,13 @@ export default {
 			navTextColor: '#FF6600',
 			navTitle: '',
 			leftIcon: 'left',
-			btnBgColor: 'rgba(0,0,0,0.25)',
+			btnBgColor: 'rgba(0,0,0,0.45)',
 			isSticky: false,
 			isCurrent: 0,
 			viewMode: 0,
 			isFollowed: false,
 			userid: '',
-			tabs: ['关于', '动态'],
+			tabs: ['关于', '同城'],
 			lastActive: '18分钟前',
 			likeCount: 0,
 			userInfo: { userOld: 0, imgUrl: '' },
@@ -301,17 +299,37 @@ export default {
 		};
 	},
 	onLoad(options) {
-		const { userid } = options;
+		const { userid, tab } = options;
 		const sys = uni.getSystemInfoSync();
 		this.statusBarHeight = sys.statusBarHeight || 20;
-		// 精确计算滚动区高度，避免高度不定导致抖动
 		this.scrollHeight = sys.windowHeight;
 		this.userid = userid;
 		this.fetchUser();
+		if (tab == '1') {
+			this.$nextTick(() => {
+				this.tabsCurrent(1);
+			});
+		}
+	},
+	onShow() {
+		if (this.isCurrent == 1 && this.userid) {
+			this.newsUserMy();
+		}
 	},
 		computed: {
 		isSelf() {
 			return String(uni.getStorageSync('userid')) === String(this.userid);
+		},
+		daysOnPlatform() {
+			const inputTime = this.userInfo.inputTime;
+			if (!inputTime) return '';
+			const joinDate = new Date(inputTime.replace(/-/g, '/'));
+			if (isNaN(joinDate.getTime())) return '';
+			const now = new Date();
+			const diff = now.getTime() - joinDate.getTime();
+			const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+			if (days < 0) return '';
+			return days;
 		},
 		keyInfoList() {
 			return this.buildKeyInfoFromUserInfo();
@@ -350,6 +368,10 @@ export default {
 					this.userInfo = res.userInfo;
 					this.userInfo.userOld = this.calcAge(res.userInfo.birthday);
 					this.isFollowed = this.userInfo.isFans == 1 ? true : false;
+					// 计算最后活跃时间
+					if (this.userInfo.inputTime) {
+						this.lastActive = this.formatLastActive(this.userInfo.inputTime);
+					}
 					
 					if (this.userInfo.xiangQinSelf == 1) {
 						this.viewMode = 0;
@@ -368,17 +390,19 @@ export default {
 			});
 		},
 		newsUserMy(){
-			this.$http('newsUserListHis', JSON.stringify({
-				token: uni.getStorageSync('token'),
-				userid: this.userid,
-				pg: this.pages
+			this.$http('newsUserListClient', JSON.stringify({
+				newsTitle: '',
+				newsFlid: 1,
+				pg: 0,
+				token: uni.getStorageSync('token') || ''
 			})).then((res) => {
 				if (res.code == 0) {
-					const datas = res.newsList.datas || [];
-					console.log('=== newsUserListHis 返回 === 条数:', datas.length);
+					const allDatas = res.newsList.datas || [];
+					// 过滤出当前用户的动态
+					const datas = allDatas.filter(item => String(item.userid) === String(this.userid));
+					console.log('=== newsUserListClient 返回 === 全部:', allDatas.length, '条, 过滤后用户动态:', datas.length, '条');
 					if (datas.length > 0) {
 						const first = datas[0];
-						console.log('第一条数据字段:', Object.keys(first).join(', '));
 						console.log('第一条数据 numDianZan:', first.numDianZan, 'numPinLun:', first.numPinLun, 'viewNum:', first.viewNum, 'isDianZan:', first.isDianZan);
 					}
 					this.postsData = datas.map(item => {
@@ -389,7 +413,6 @@ export default {
 						}
 						return item;
 					});
-					// 计算获赞总数
 					this.likeCount = this.postsData.reduce((sum, p) => sum + (Number(p.numDianZan) || 0), 0);
 				} else {
 					uni.showToast({ title: res.msg, icon: 'none' });
@@ -637,6 +660,23 @@ export default {
 			const y = parseInt(birthday.split('-')[0]);
 			return isNaN(y) ? '' : new Date().getFullYear() - y;
 		},
+		formatLastActive(inputtime) {
+			if (!inputtime) return '';
+			const joinDate = new Date(inputtime.replace(/-/g, '/'));
+			if (isNaN(joinDate.getTime())) return '';
+			const now = new Date();
+			const diffMs = now.getTime() - joinDate.getTime();
+			const diffMin = Math.floor(diffMs / (1000 * 60));
+			const diffHour = Math.floor(diffMin / 60);
+			const diffDay = Math.floor(diffHour / 24);
+			if (diffMin < 1) return '刚刚';
+			if (diffMin < 60) return diffMin + '分钟前';
+			if (diffHour < 24) return diffHour + '小时前';
+			if (diffDay < 30) return diffDay + '天前';
+			const month = joinDate.getMonth() + 1;
+			const day = joinDate.getDate();
+			return `${month}月${day}日`;
+		},
 		// 查看他人主页时，从 userInfoPublic 数据构建个人信息标签
 		// 实际字段名参考接口返回：sex, shengGao, xinZuo, wenHua, zhiYe, zuoYouMin
 		buildKeyInfoFromUserInfo() {
@@ -718,15 +758,15 @@ export default {
 			if (opacity <= 0) {
 				this.navBgColor = 'transparent';
 				this.navTextColor = '#FF6600';
-				this.btnBgColor = 'rgba(0,0,0,0.25)';
+				this.btnBgColor = 'rgba(0,0,0,0.5)';
 			} else if (opacity >= 1) {
 				this.navBgColor = '#ffffff';
 				this.navTextColor = '#FF6600';
-				this.btnBgColor = 'rgba(0,0,0,0.06)';
+				this.btnBgColor = '#3B82F6';
 			} else {
 				this.navBgColor = `rgba(255,255,255,${opacity})`;
 				this.navTextColor = '#FF6600';
-				this.btnBgColor = `rgba(0,0,0,${opacity > 0.5 ? 0.06 : 0.25})`;
+				this.btnBgColor = opacity > 0.5 ? '#3B82F6' : `rgba(0,0,0,0.5)`;
 			}
 
 			this.navTitle = opacity > 0.3 ? this.userInfo.userName || '' : '';
@@ -745,7 +785,22 @@ export default {
 			this.userFansOpt();
 		},
 		handleDianzan(newsID) {
-			/* 点赞逻辑 */
+			console.log('[点赞-headshots] newsID:', newsID);
+			this.$http('newsUserDianZan', JSON.stringify({
+				newsID: newsID,
+				token: uni.getStorageSync('token') || ''
+			})).then(res => {
+				console.log('[点赞-headshots] 接口返回:', res);
+				if (res.code == 0) {
+					uni.showToast({ title: res.msg || '操作成功', icon: 'none' });
+					this.newsUserMy();
+				} else {
+					uni.showToast({ title: res.msg || '操作失败', icon: 'none' });
+				}
+			}).catch(err => {
+				console.error('点赞失败', err);
+				uni.showToast({ title: '操作失败', icon: 'none' });
+			});
 		},
 		handleViewCount(post) {
 			// 浏览计数
@@ -764,10 +819,9 @@ export default {
 			});
 		},
 		handleDiscuss(post) {
-			this.handleShare();
-			// uni.navigateTo({
-			// 	url: `/pages/index/discuss?newsID=${post.newsID}&userID=${post.userid}`
-			// });
+			uni.navigateTo({
+				url: `/pages/index/discuss?newsID=${post.newsID}&userID=${post.userid}`
+			});
 		},
 		handleAccost(userid) {
 			// uni.navigateTo({
@@ -778,6 +832,35 @@ export default {
 			this.popupTitle = title;
 			this.shareData = this.shareConfig[type] || [];
 			this.$refs.popup.open('bottom');
+		},
+		isOwnPost(item) {
+			const currentUserid = uni.getStorageSync('userid');
+			return item && currentUserid && String(item.userid) === String(currentUserid);
+		},
+		handleDeleteNews(item) {
+			if (!item || !item.newsID) return;
+			uni.showModal({
+				title: '删除确认',
+				content: '确定要删除这条动态吗？',
+				success: (res) => {
+					if (res.confirm) {
+						this.$http('newsUserDel', JSON.stringify({
+							newsID: item.newsID,
+							token: uni.getStorageSync('token') || ''
+						})).then(res => {
+							if (res.code == 0) {
+								uni.showToast({ title: '删除成功', icon: 'success' });
+								this.newsUserMy();
+							} else {
+								uni.showToast({ title: res.msg || '删除失败', icon: 'none' });
+							}
+						}).catch(err => {
+							console.error('删除动态失败:', err);
+							uni.showToast({ title: '删除失败', icon: 'none' });
+						});
+					}
+				}
+			});
 		},
 		tabsCurrent(index){
 			console.log("index", index);
@@ -824,15 +907,22 @@ export default {
 
 	::v-deep .uni-navbar__header-btns {
 		border-radius: 50%;
-		width: 36px;
-		// height: 36px;
-		transition: background-color 0.15s ease;
+		width: 48px;
+		height: 48px;
+		transition: all 0.2s ease;
 		background-color: v-bind(btnBgColor);
-		will-change: background-color;
+		will-change: all;
+	}
+
+	::v-deep .uni-navbar__header-btns:active {
+		transform: scale(0.92);
 	}
 
 	::v-deep .uni-navbar__header-btns .uni-navbar-btn-icon {
-		color: v-bind(navTextColor) !important;
+		color: #FF6600 !important;
+		font-size: 28px !important;
+		font-weight: bold !important;
+		line-height: 48px !important;
 	}
 
 	::v-deep .uni-navbar__header-btns-left {
@@ -959,11 +1049,29 @@ export default {
 		display: flex;
 		align-items: center;
 		flex-wrap: wrap;
-		gap: 4px;
+		gap: 8px;
 
-		text {
-			color: #999;
-			font-size: 13px;
+		.meta-pill {
+			font-size: 12px;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-weight: 500;
+			line-height: 1.4;
+		}
+
+		.meta-loc {
+			color: #0dc6e0;
+			background: rgba(13, 198, 224, 0.1);
+		}
+
+		.meta-like {
+			color: #ff6b8a;
+			background: rgba(255, 107, 138, 0.1);
+		}
+
+		.meta-days {
+			color: #FF6600;
+			background: rgba(255, 102, 0, 0.1);
 		}
 	}
 }
@@ -1024,88 +1132,128 @@ export default {
 
 .section {
 	background: #fff;
-	padding: 15px;
-	margin-bottom: 10px;
+	padding: 18px 18px 20px;
+	margin-bottom: 12px;
+	border-radius: 14px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 
 	.section-title {
-		font-size: 13px;
-		color: #999;
-		font-weight: 500;
-		letter-spacing: 1px;
-		margin-bottom: 10px;
-		display: block;
+		font-size: 14px;
+		color: #333;
+		font-weight: 600;
+		margin-bottom: 14px;
+		display: flex;
+		align-items: center;
+		gap: 6px;
+
+		&::before {
+			content: '';
+			display: inline-block;
+			width: 3px;
+			height: 14px;
+			background: linear-gradient(180deg, #FF6600, #ff9a44);
+			border-radius: 2px;
+		}
 	}
 
 	.tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 8px;
+		gap: 10px;
 
 		.tag {
-			font-size: 13px;
+			font-size: 12px;
 			color: #555;
-			background: #f5f5f5;
+			background: linear-gradient(135deg, #f8f9fa 0%, #eef0f2 100%);
 			padding: 6px 14px;
-			border-radius: 20px;
+			border-radius: 16px;
+			border: 1px solid rgba(0,0,0,0.04);
+			font-weight: 500;
+			transition: all 0.2s;
+		}
+
+		.tag:first-child {
+			background: linear-gradient(135deg, #0dc6e0 0%, #0899b0 100%);
+			color: #fff;
+			border-color: transparent;
+		}
+
+		.tag:nth-child(2) {
+			background: linear-gradient(135deg, #ff6b8a 0%, #e94e70 100%);
+			color: #fff;
+			border-color: transparent;
+		}
+
+		.tag:nth-child(3) {
+			background: linear-gradient(135deg, #FF6600 0%, #ff9a44 100%);
+			color: #fff;
+			border-color: transparent;
 		}
 	}
 
-	.motto {
-		font-size: 14px;
-		color: #444;
-		line-height: 1.7;
-	}
-
 	.motto-box {
-		margin-top: 12px;
-		padding: 12px;
-		background: #f9f9f9;
-		border-radius: 8px;
+		margin-top: 14px;
+		padding: 14px 16px;
+		background: linear-gradient(135deg, #fff9f4 0%, #fff5ee 100%);
+		border-radius: 12px;
+		border-left: 3px solid #FF6600;
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
+		gap: 8px;
 
 		.motto-title {
 			font-size: 12px;
-			color: #999;
-			font-weight: 500;
+			color: #FF6600;
+			font-weight: 600;
+			letter-spacing: 1px;
 		}
 
 		.motto-content {
 			font-size: 14px;
-			color: #444;
-			line-height: 1.6;
+			color: #555;
+			line-height: 1.7;
+			font-style: italic;
 		}
 	}
 
 	.xiangqin-grid {
 		display: flex;
-		gap: 20px;
-		margin-top: 8px;
+		gap: 24px;
+		margin-top: 12px;
 	}
 
 	.xiangqin-col {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 14px;
 	}
 
 	.xiangqin-item {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		padding: 8px 12px;
+		background: #fafafa;
+		border-radius: 10px;
+		border-left: 2px solid #e0e0e0;
+		transition: all 0.2s;
+
+		&:hover {
+			border-left-color: #FF6600;
+			background: #fff9f4;
+		}
 	}
 
 	.xq-label {
-		font-size: 13px;
+		font-size: 12px;
 		color: #999;
 	}
 
 	.xq-value {
 		font-size: 14px;
 		color: #333;
-		font-weight: 500;
+		font-weight: 600;
 	}
 }
 
@@ -1317,15 +1465,20 @@ export default {
 	font-size: 14px;
 }
 
-.section-title1{
-	font-size: 20px;
-	color: #fd7031;
-	font-weight: bold;
-	letter-spacing: 1px;
-	margin-bottom: 16px;
+.section-title1 {
+	font-size: 14px;
+	color: #333;
+	font-weight: 600;
+	margin-bottom: 14px;
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 8px;
+	justify-content: flex-start;
+
+	&::before {
+		content: '💕';
+		font-size: 16px;
+	}
 }
 
 .image-grid {

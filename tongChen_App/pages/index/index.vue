@@ -151,10 +151,10 @@
 							<view class="action-item" @click="showPromoteTip">
 								<uni-icons type="more-filled" size="26" color="#666666" class="vertical-dots" />
 							</view>
-							<view class="action-item" v-if="isOwnPost(item)" @click="handleDeleteNews(item)">
+							<!-- <view class="action-item" v-if="isOwnPost(item)" @click="handleDeleteNews(item)">
 								<uni-icons type="trash" size="26" color="#ff4d4f" />
 								<view class="action-title" style="color:#ff4d4f">删除</view>
-							</view>
+							</view> -->
 						</view>
 					</view>
 				</view>
@@ -526,14 +526,14 @@ export default {
 						} else {
 							this.currentLocation = '同城';
 						}
-						console.log('[IP定位] currentLocation设置为:', this.currentLocation);
+						
 						// 补全列表中每条动态的经纬度
 						this.fillMissingLatLon();
 					} else {
 						this.currentLocation = '同城';
 					}
 				}).catch(err => {
-					console.log('[IP定位] userInfo请求异常:', err);
+					
 					this.currentLocation = '同城';
 				});
 			} else {
@@ -567,10 +567,10 @@ export default {
 		fillMissingLatLon() {
 			const list = this.tabData[this.tabIndex] || [];
 			const token = uni.getStorageSync('token') || '';
-			console.log('[IP定位] fillMissingLatLon: 列表总数=' + list.length);
+			
 			// 去重：同一userid只请求一次
 			const userids = [...new Set(list.map(i => i.userid).filter(Boolean))];
-			console.log('[IP定位] 去重后需请求的用户数=' + userids.length);
+			
 			userids.forEach(userid => {
 				// 缓存中已有地址则直接填充
 				if (this.userInfoCache[userid] && this.userInfoCache[userid].address) {
@@ -578,14 +578,13 @@ export default {
 					return;
 				}
 				// 调userInfoPublic获取经纬度
-				console.log('[IP定位] userid=' + userid + ' 调userInfoPublic获取经纬度');
+			
 				this.$http('userInfoPublic', JSON.stringify({
 					userid: userid,
 					token: token
 				})).then(res => {
 					if (res.code == 0 && res.userInfo && res.userInfo.lat && res.userInfo.lon) {
 						const u = res.userInfo;
-						console.log('[IP定位] userid=' + userid + ' 经纬度: lat=' + u.lat + ', lon=' + u.lon);
 						// 存入缓存
 						if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
 						this.userInfoCache[userid].lat = u.lat;
@@ -593,10 +592,10 @@ export default {
 						// 调高德逆地理编码获取省市区
 						this.reverseGeoToAddress(userid, Number(u.lon), Number(u.lat));
 					} else {
-						console.log('[IP定位] userid=' + userid + ' userInfoPublic无经纬度数据');
+						
 					}
 				}).catch(err => {
-					console.log('[IP定位] userid=' + userid + ' userInfoPublic请求失败:', err);
+					
 				});
 			});
 		},
@@ -604,12 +603,12 @@ export default {
 		reverseGeoToAddress(userid, lon, lat) {
 			const key = '93d81e19f28196780e2e7cb2120222ab';
 			const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${lon},${lat}&extensions=base`;
-			console.log('[IP定位] userid=' + userid + ' 调高德逆地理: lon=' + lon + ', lat=' + lat);
+	
 			uni.request({
 				url: url,
 				method: 'GET',
 				success: (r) => {
-					console.log('[IP定位] 高德逆地理响应:', JSON.stringify(r.data).substring(0, 400));
+
 					if (r.data && r.data.status === '1' && r.data.regeocode) {
 						const comp = r.data.regeocode.addressComponent || {};
 						const province = comp.province || '';
@@ -617,18 +616,17 @@ export default {
 						const district = comp.district || '';
 						const parts = [city, district].filter(Boolean);
 						const address = parts.join('-');
-						console.log('[IP定位] userid=' + userid + ' 逆地理结果: ' + address);
 						if (address) {
 							if (!this.userInfoCache[userid]) this.userInfoCache[userid] = {};
 							this.userInfoCache[userid].address = address;
 							this.applyAddressToList(userid, address);
 						}
 					} else {
-						console.log('[IP定位] userid=' + userid + ' 高德逆地理失败:', r.data ? r.data.info : '无数据');
+
 					}
 				},
 				fail: (err) => {
-					console.log('[IP定位] userid=' + userid + ' 高德逆地理请求失败:', err);
+					
 				}
 			});
 		},
@@ -715,7 +713,7 @@ export default {
 			return defaultMap[type] || '';
 		},
 		getPublishTypeIcon(type) {
-			console.log('getPublishTypeIcon type:', type, 'typeof:', typeof type);
+
 			if (type === '' || type === null || type === undefined) return '📷';
 			const iconMap = {
 				1: '📸',
@@ -728,7 +726,7 @@ export default {
 				8: '🎥'
 			};
 			const result = iconMap[type] || '📷';
-			console.log('icon result:', result);
+			
 			return result;
 		},
 		getUserLevel(item) {
@@ -853,9 +851,8 @@ export default {
 		// 处理分页数据拼接
 		handleData(newsList, reset) {
 			const data = newsList.datas || [];
-			// 调试：打印每条列表项的 userid、userSex、userOld
 			data.forEach((item, i) => {
-				console.log(`=== 列表数据[${i}] === userid:${item.userid} userSex:${item.userSex} userOld:${item.userOld} userName:${item.userName}`);
+				console.log(`=== 列表数据[${i}] === userid:${item.userid} isDianZan:${item.isDianZan} numDianZan:${item.numDianZan} numPinLun:${item.numPinLun}`);
 			});
 			const pageInfo = newsList.pgInfo || {};
 			if (reset) {
@@ -1091,21 +1088,16 @@ export default {
 					token: uni.getStorageSync('token') || ''
 				});
 				if (res.code == 0) {
-					const idx = this.currentTabData.findIndex(item => item.newsID === newsID);
-					if (idx > -1) {
-						const item = this.currentTabData[idx];
-						item.isDianZan = item.isDianZan === 1 ? 0 : 1;
-						item.numDianZan = item.isDianZan ? Number(item.numDianZan) + 1 : Math.max(0, Number(item.numDianZan) - 1);
-						// 响应式更新视图
-						this.$set(this.tabData[this.tabIndex], idx, { ...item });
-					}
-					uni.showToast({ title: res.msg, icon: 'none' });
-					console.log(this.currentTabData);
+					console.log('[点赞] 后端返回:', res);
+					uni.showToast({ title: res.msg || '操作成功', icon: 'none' });
+					// 直接从后端刷新数据，保证状态一致
+					this.loadData(true);
 				} else {
-					uni.showToast({ title: res.msg, icon: 'none' });
+					uni.showToast({ title: res.msg || '操作失败', icon: 'none' });
 				}
 			} catch (err) {
 				console.error('点赞失败', err);
+				uni.showToast({ title: '操作失败', icon: 'none' });
 			}
 		},
 

@@ -95,8 +95,10 @@
         </view>
         <!-- 已上传图片预览 -->
         <view class="img-preview" v-if="imgList.length > 0">
-          <view class="img-item" v-for="(src,idx) in imgList" :key="idx" @click="previewImg(idx)">
-            <image :src="src" mode="aspectFill"></image>
+          <view class="img-item" v-for="item in imgList" :key="item.type">
+            <image :src="item.url" mode="aspectFill" @click="previewImg(item.url)"></image>
+            <view class="img-label">{{ item.label }}</view>
+            <view class="img-delete" @click="deleteImg(item.type)">×</view>
           </view>
         </view>
       </view>
@@ -185,6 +187,7 @@
 
 <script>
 import areaData from '@/static/city.json'
+import { qiniuUrl } from "@/utils/api.js"
 export default {
   data() {
     return {
@@ -198,7 +201,7 @@ export default {
       allArea: [],
       // 承诺书弹窗
       showPopup: false,
-      popupContentHeight: 0,  // 动态计算的弹窗内容高度
+      popupContentHeight: 0,
       // 表单数据
       adTime: "",
       asideList: ["有需要的用户可自行前往", "欢迎各位顾客到店体验"],
@@ -219,9 +222,25 @@ export default {
       linkMan: "",
       linkPhone: "",
       detailAddr: "",
-      // 图片上传
-      imgList: [],
-      uploadType: ""
+      // 图片上传 - 按类型存储
+      imgMap: {
+        idFront: "",
+        idBack: "",
+        scene: ""
+      },
+      // 上传中状态
+      uploading: false,
+      submitting: false
+    }
+  },
+  computed: {
+    // 图片预览列表（用于模板渲染）
+    imgList() {
+      const list = []
+      if (this.imgMap.idFront) list.push({ type: 'idFront', url: this.imgMap.idFront, label: '身份证正面' })
+      if (this.imgMap.idBack) list.push({ type: 'idBack', url: this.imgMap.idBack, label: '身份证反面' })
+      if (this.imgMap.scene) list.push({ type: 'scene', url: this.imgMap.scene, label: '场景照片' })
+      return list
     }
   },
   onLoad() {
@@ -291,26 +310,87 @@ export default {
     },
     // 图片选择上传
     chooseImg(type) {
-      this.uploadType = type
+      if (this.uploading) {
+        uni.showToast({ title: "正在上传中，请稍候", icon: "none" })
+        return
+      }
       uni.chooseImage({
         count: 1,
         sizeType: ["compressed"],
-        sourceType: ["album"],
+        sourceType: ["album", "camera"],
         success: res => {
-          this.imgList.push(...res.tempFilePaths)
+          const tempFile = res.tempFiles[0]
+          if (tempFile) {
+            this.uploadToQiniu(tempFile, type)
+          }
         }
       })
     },
-    previewImg(index) {
+    // 上传到七牛云
+    async uploadToQiniu(file, type) {
+      this.uploading = true
+      uni.showLoading({ title: '上传中...', mask: true })
+      try {
+        const tokenRes = await this.$http("qiNiuToken", JSON.stringify({
+          token: uni.getStorageSync("token")
+        }))
+        const uploadResult = await new Promise((resolve, reject) => {
+          uni.uploadFile({
+            url: 'https://upload.qiniup.com',
+            filePath: file.path,
+            name: 'file',
+            formData: {
+              'token': tokenRes.para.upToken
+            },
+            success: (res) => {
+              if (res.statusCode === 200) {
+                try {
+                  resolve(JSON.parse(res.data))
+                } catch (e) {
+                  reject(new Error('解析结果失败'))
+                }
+              } else {
+                reject(new Error('上传失败'))
+              }
+            },
+            fail: reject
+          })
+        })
+        const imageUrl = qiniuUrl + uploadResult.hash
+        this.imgMap[type] = imageUrl
+        uni.showToast({ title: '上传成功', icon: 'success' })
+      } catch (error) {
+        console.error('上传失败:', error)
+        uni.showToast({ title: '图片上传失败', icon: 'none' })
+      } finally {
+        this.uploading = false
+        uni.hideLoading()
+      }
+    },
+    // 删除图片
+    deleteImg(type) {
+      uni.showModal({
+        title: '确认删除',
+        content: '确定要删除这张图片吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.imgMap[type] = ""
+            uni.showToast({ title: '已删除' })
+          }
+        }
+      })
+    },
+    // 图片预览
+    previewImg(url) {
+      const urls = this.imgList.map(i => i.url)
       uni.previewImage({
-        urls: this.imgList,
-        current: this.imgList[index]
+        urls: urls,
+        current: url
       })
     },
     // 打开协议弹窗
     showAgree() {
       this.showPopup = true
-      // 延迟计算弹窗内容高度（真机适配关键）
       setTimeout(() => {
         this.calcPopupHeight()
       }, 50)
@@ -319,24 +399,52 @@ export default {
     calcPopupHeight() {
       const sysInfo = uni.getSystemInfoSync()
       const windowHeight = sysInfo.windowHeight
-      // 弹窗高度 = 屏幕高度 * 0.72
       const popupHeight = windowHeight * 0.72
-      // 内容高度 = 弹窗高度 - 按钮高度(45px) - 内边距
       const btnHeight = 45
-      const padding = 12  // 上下各24rpx ≈ 12px
+      const padding = 12
       this.popupContentHeight = popupHeight - btnHeight - padding
       console.log('弹窗计算: 弹窗高=' + popupHeight + ' 内容高=' + this.popupContentHeight)
     },
     // 表单提交校验
     submitSave() {
+      if (this.submitting) return
+      // 必填校验
       if (!this.adTime || !this.adTitle || !this.adContent || !this.adAside || !this.linkMan || !this.linkPhone || !this.regionStr || !this.detailAddr) {
         uni.showToast({ title: "请完善全部必填信息", icon: "none" })
         return
       }
-      uni.showToast({ title: "临时广告提交成功，有效期3天" })
+      // 手机号格式校验
+      if (!/^1[3-9]\d{9}$/.test(this.linkPhone)) {
+        uni.showToast({ title: "请输入正确的手机号", icon: "none" })
+        return
+      }
+      // 图片校验（至少上传一张）
+      if (!this.imgMap.idFront && !this.imgMap.idBack && !this.imgMap.scene) {
+        uni.showToast({ title: "请至少上传一张图片", icon: "none" })
+        return
+      }
+      this.submitting = true
+      uni.showLoading({ title: '提交中...', mask: true })
+      // TODO: 对接后端接口 tempAdAdd
+      console.log('提交数据:', {
+        adTime: this.adTime,
+        adTitle: this.adTitle,
+        adContent: this.adContent,
+        adAside: this.adAside,
+        linkMan: this.linkMan,
+        linkPhone: this.linkPhone,
+        regionStr: this.regionStr,
+        detailAddr: this.detailAddr,
+        imgs: { ...this.imgMap }
+      })
       setTimeout(() => {
-        uni.navigateBack()
-      }, 1500)
+        uni.hideLoading()
+        uni.showToast({ title: "临时广告提交成功，有效期3天" })
+        this.submitting = false
+        setTimeout(() => {
+          uni.navigateBack()
+        }, 1500)
+      }, 500)
     }
   }
 }
@@ -451,12 +559,39 @@ page {
     gap: 16rpx;
     .img-item {
       width: 160rpx;
-      height: 160rpx;
+      height: 200rpx;
       border-radius: 10rpx;
       overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
       image {
         width: 100%;
-        height: 100%;
+        height: 160rpx;
+      }
+      .img-label {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40rpx;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-size: 20rpx;
+        line-height: 40rpx;
+        text-align: center;
+      }
+      .img-delete {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 36rpx;
+        height: 36rpx;
+        background: rgba(255, 0, 0, 0.8);
+        color: #fff;
+        font-size: 28rpx;
+        line-height: 36rpx;
+        text-align: center;
+        border-bottom-left-radius: 10rpx;
       }
     }
   }

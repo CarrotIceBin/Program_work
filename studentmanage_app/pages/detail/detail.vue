@@ -63,7 +63,6 @@
 			<view class="form-item column" v-else>
 				<text class="label">选择座位</text>
 				<view class="seat-picker">
-					<view class="picker-podium">讲台</view>
 					<view class="picker-classroom">
 						<view class="picker-row" v-for="r in totalRows" :key="r">
 							<view class="picker-group picker-group-left">
@@ -124,6 +123,7 @@
 							</view>
 						</view>
 					</view>
+					<view class="picker-podium">讲台</view>
 					<view class="picker-hint">
 						<text class="hint-available">可选</text>
 						<text class="hint-taken-male">男生</text>
@@ -459,7 +459,7 @@
 
 	.picker-podium {
 		width: 45%;
-		margin: 0 auto 16rpx;
+		margin: 16rpx auto 0;
 		padding: 10rpx 0;
 		text-align: center;
 		font-size: 20rpx;

@@ -120,7 +120,7 @@ export default {
 		if (saved === '男' || saved === '女') {
 			this.genderFilterText = saved;
 		} else {
-			this.genderFilterText = '';
+			this.genderFilterText = '全部';
 		}
 	},
 	methods: {
@@ -215,7 +215,7 @@ export default {
 				return;
 			}
 			uni.navigateTo({
-				url: `/pages/index/headshots?userid=${userid}`
+				url: `/pages/index/headshots?userid=${userid}&tab=1`
 			});
 		},
 		checkLogin() {

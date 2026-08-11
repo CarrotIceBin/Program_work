@@ -1,6 +1,5 @@
 <template>
 	<scroll-view scroll-y class="container" :show-scrollbar="false">
-		<view class="podium">讲 台</view>
 		<view class="classroom" :class="{ 'move-mode': moveMode }">
 			<view class="row" v-for="row in totalRows" :key="row">
 				<view class="seat-group seat-group-left">
@@ -64,6 +63,7 @@
 				</view>
 			</view>
 		</view>
+		<view class="podium">讲 台</view>
 		<view class="legend">
 			<view class="legend-item">
 				<view class="legend-color male"></view>
@@ -252,7 +252,7 @@
 
 	.podium {
 		width: 50%;
-		margin: 4rpx auto 16rpx;
+		margin: 16rpx auto 4rpx;
 		padding: 10rpx 0;
 		text-align: center;
 		font-size: 24rpx;
